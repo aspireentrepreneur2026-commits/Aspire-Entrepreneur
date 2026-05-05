@@ -1,8 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import * as PrismaClientPkg from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
 const globalForPrisma = globalThis as unknown as {
-  prisma?: PrismaClient;
+  prisma?: any;
 };
 
 const connectionString = process.env.DATABASE_URL;
@@ -11,10 +11,18 @@ if (!connectionString) {
 }
 
 const adapter = new PrismaPg({ connectionString });
+const PrismaClientCtor = (PrismaClientPkg as { PrismaClient?: new (options?: any) => any })
+  .PrismaClient;
+
+if (!PrismaClientCtor) {
+  throw new Error(
+    "PrismaClient export is missing. Ensure `prisma generate` runs during build.",
+  );
+}
 
 export const prisma =
   globalForPrisma.prisma ??
-  new PrismaClient({
+  new PrismaClientCtor({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["query", "error"] : ["error"],
   });
