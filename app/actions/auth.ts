@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth, signIn, signOut } from "@/auth";
-import type { UserRole } from "@prisma/client";
+
+type AppRole = "FOUNDER" | "MENTOR" | "INVESTOR" | "ADMIN";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name should be at least 2 characters."),
@@ -16,7 +17,7 @@ const registerSchema = z.object({
     .min(8, "Password should be at least 8 characters.")
     .regex(/[a-zA-Z]/, "Password must contain at least one letter.")
     .regex(/[0-9]/, "Password must contain at least one number."),
-  role: z.enum(["FOUNDER", "MENTOR", "INVESTOR"] satisfies UserRole[]),
+  role: z.enum(["FOUNDER", "MENTOR", "INVESTOR"] satisfies AppRole[]),
 });
 
 const loginSchema = z.object({
