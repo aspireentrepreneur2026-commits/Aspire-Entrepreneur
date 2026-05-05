@@ -1,8 +1,14 @@
 import * as PrismaClientPkg from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
+type PrismaClientLike = Record<string, unknown>;
+type PrismaClientOptions = {
+  adapter: PrismaPg;
+  log: string[];
+};
+
 const globalForPrisma = globalThis as unknown as {
-  prisma?: any;
+  prisma?: PrismaClientLike;
 };
 
 const connectionString = process.env.DATABASE_URL;
@@ -11,8 +17,9 @@ if (!connectionString) {
 }
 
 const adapter = new PrismaPg({ connectionString });
-const PrismaClientCtor = (PrismaClientPkg as { PrismaClient?: new (options?: any) => any })
-  .PrismaClient;
+const PrismaClientCtor = (
+  PrismaClientPkg as { PrismaClient?: new (options?: PrismaClientOptions) => PrismaClientLike }
+).PrismaClient;
 
 if (!PrismaClientCtor) {
   throw new Error(
