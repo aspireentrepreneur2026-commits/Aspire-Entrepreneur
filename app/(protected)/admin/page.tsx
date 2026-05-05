@@ -1,8 +1,7 @@
-import { UserRole } from "@prisma/client";
 import { requireRole } from "@/lib/session";
 
 export default async function AdminPage() {
-  await requireRole([UserRole.ADMIN]);
+  await requireRole(["ADMIN"]);
 
   return (
     <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">

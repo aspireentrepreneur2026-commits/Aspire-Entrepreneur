@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import type { UserRole } from "@prisma/client";
 import { auth } from "@/auth";
+
+type AppRole = "FOUNDER" | "MENTOR" | "INVESTOR" | "ADMIN";
 
 export async function requireAuth() {
   const session = await auth();
@@ -10,9 +11,10 @@ export async function requireAuth() {
   return session;
 }
 
-export async function requireRole(allowedRoles: UserRole[]) {
+export async function requireRole(allowedRoles: AppRole[]) {
   const session = await requireAuth();
-  if (!session.user.role || !allowedRoles.includes(session.user.role)) {
+  const role = session.user.role as AppRole | undefined;
+  if (!role || !allowedRoles.includes(role)) {
     redirect("/dashboard");
   }
   return session;

@@ -65,6 +65,8 @@ export async function registerAction(
     password,
     redirectTo: "/dashboard",
   });
+
+  return { success: "Account created successfully." };
 }
 
 export async function loginAction(
@@ -86,6 +88,7 @@ export async function loginAction(
       password: parsed.data.password,
       redirectTo: "/dashboard",
     });
+    return { success: "Signed in successfully." };
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: "Invalid email or password." };

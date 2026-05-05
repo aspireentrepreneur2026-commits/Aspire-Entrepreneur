@@ -4,6 +4,8 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import authConfig from "@/auth.config";
 
+type AppRole = "FOUNDER" | "MENTOR" | "INVESTOR" | "ADMIN";
+
 const loginSchema = z.object({
   email: z.string().email().trim().toLowerCase(),
   password: z.string().min(8),
@@ -54,7 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.sub ?? "";
-        session.user.role = token.role;
+        session.user.role = token.role as AppRole | undefined;
       }
       return session;
     },
