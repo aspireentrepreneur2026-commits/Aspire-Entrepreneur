@@ -7,7 +7,7 @@ export default async function Home() {
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-6 py-16">
       <div className="overflow-hidden rounded-3xl border border-indigo-100 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
         <div className="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 p-8 text-white">
-          <p className="text-xs uppercase tracking-[0.18em] text-indigo-100">Hamza FYP</p>
+          <p className="text-xs uppercase tracking-[0.18em] text-indigo-100">Aspire Entrepreneur</p>
           <h1 className="mt-2 text-3xl font-semibold">Entrepreneurship Support Portal</h1>
           <p className="mt-3 max-w-2xl text-indigo-100">
             A clean starting point for founders, mentors, and investors with module-wise growth.
