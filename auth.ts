@@ -5,6 +5,7 @@ import { z } from "zod";
 import authConfig from "@/auth.config";
 
 type AppRole = "FOUNDER" | "MENTOR" | "INVESTOR" | "ADMIN";
+type OnboardingState = "BASIC" | "ROLE_PROFILE" | "COMPLETED";
 
 const loginSchema = z.object({
   email: z.string().email().trim().toLowerCase(),
@@ -42,6 +43,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           email: user.email,
           role: user.role,
+          onboardingStatus: user.onboardingStatus,
         };
       },
     }),
@@ -50,6 +52,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role;
+        token.onboardingStatus = user.onboardingStatus;
       }
       return token;
     },
@@ -57,6 +60,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         session.user.id = token.sub ?? "";
         session.user.role = token.role as AppRole | undefined;
+        session.user.onboardingStatus = token.onboardingStatus as OnboardingState | undefined;
       }
       return session;
     },

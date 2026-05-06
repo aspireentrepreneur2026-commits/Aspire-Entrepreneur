@@ -11,6 +11,7 @@ const authConfig = {
       const isAuthPage =
         nextUrl.pathname.startsWith("/login") || nextUrl.pathname.startsWith("/register");
       const isProtectedPage =
+        nextUrl.pathname.startsWith("/onboarding") ||
         nextUrl.pathname.startsWith("/dashboard") ||
         nextUrl.pathname.startsWith("/settings") ||
         nextUrl.pathname.startsWith("/admin");

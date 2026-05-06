@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth, signIn, signOut } from "@/auth";
+import { getPostAuthRedirectPath } from "@/lib/auth-redirect";
 
 type AppRole = "FOUNDER" | "MENTOR" | "INVESTOR" | "ADMIN";
 
@@ -57,6 +58,7 @@ export async function registerAction(
       name,
       email,
       role,
+      onboardingStatus: "ROLE_PROFILE",
       passwordHash,
     },
   });
@@ -64,7 +66,7 @@ export async function registerAction(
   await signIn("credentials", {
     email,
     password,
-    redirectTo: "/dashboard",
+    redirectTo: "/onboarding",
   });
 
   return { success: "Account created successfully." };
@@ -84,10 +86,15 @@ export async function loginAction(
   }
 
   try {
+    const account = await prisma.user.findUnique({
+      where: { email: parsed.data.email },
+      select: { role: true, onboardingStatus: true },
+    });
+
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: "/dashboard",
+      redirectTo: getPostAuthRedirectPath(account?.role, account?.onboardingStatus),
     });
     return { success: "Signed in successfully." };
   } catch (error) {
