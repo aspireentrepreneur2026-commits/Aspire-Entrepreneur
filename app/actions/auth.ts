@@ -13,11 +13,9 @@ type AppRole = "FOUNDER" | "MENTOR" | "INVESTOR" | "ADMIN";
 const registerSchema = z.object({
   name: z.string().min(2, "Name should be at least 2 characters."),
   email: z.string().email("Enter a valid email address.").trim().toLowerCase(),
-  confirmEmail: z.string().email("Confirm email is required.").trim().toLowerCase(),
   phoneNumber: z.string().min(10, "Phone number is required."),
-  confirmPhoneNumber: z.string().min(10, "Confirm phone number is required."),
-  emailCode: z.string().trim().optional(),
-  phoneCode: z.string().trim().optional(),
+  emailCode: z.string().length(6, "Email code must be 6 digits."),
+  phoneCode: z.string().length(6, "Phone code must be 6 digits."),
   country: z.string().min(2, "Country is required."),
   location: z.string().min(2, "Location is required."),
   joinAim: z.string().min(10, "Please share your main aim to join this portal."),
@@ -72,12 +70,83 @@ export async function registerAction(
   _prevState: ActionState | undefined,
   formData: FormData,
 ): Promise<ActionState> {
+  const intent = String(formData.get("intent") ?? "createAccount");
+
+  if (intent === "verifyEmail" || intent === "verifyPhone") {
+    const verificationTargetSchema = z.object({
+      email: z.string().email("Enter a valid email address.").trim().toLowerCase(),
+      phoneNumber: z.string().min(10, "Enter phone number before requesting code."),
+    });
+    const targetParsed = verificationTargetSchema.safeParse({
+      email: formData.get("email"),
+      phoneNumber: formData.get("phoneNumber"),
+    });
+    if (!targetParsed.success) {
+      return { error: targetParsed.error.issues[0]?.message ?? "Invalid verification request." };
+    }
+
+    const { email, phoneNumber } = targetParsed.data;
+    const existingUserByEmail = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+    if (existingUserByEmail) {
+      return { error: "An account with this email already exists." };
+    }
+
+    const existingUserByPhone = await prisma.user.findUnique({
+      where: { phoneNumber },
+      select: { id: true },
+    });
+    if (existingUserByPhone) {
+      return { error: "An account with this phone number already exists." };
+    }
+
+    const existingVerification = await prisma.registrationVerification.findUnique({
+      where: { email },
+    });
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const generatedCode = String(Math.floor(100000 + Math.random() * 900000));
+    const generatedEmailCode =
+      intent === "verifyEmail"
+        ? generatedCode
+        : existingVerification?.emailCode ?? String(Math.floor(100000 + Math.random() * 900000));
+    const generatedPhoneCode =
+      intent === "verifyPhone"
+        ? generatedCode
+        : existingVerification?.phoneCode ?? String(Math.floor(100000 + Math.random() * 900000));
+
+    await prisma.registrationVerification.upsert({
+      where: { email },
+      update: {
+        phone: phoneNumber,
+        emailCode: generatedEmailCode,
+        phoneCode: generatedPhoneCode,
+        expiresAt,
+      },
+      create: {
+        email,
+        phone: phoneNumber,
+        emailCode: generatedEmailCode,
+        phoneCode: generatedPhoneCode,
+        expiresAt,
+      },
+    });
+
+    if (intent === "verifyEmail") {
+      console.log(`[REGISTER VERIFY] Email code for ${email}: ${generatedCode}`);
+      return {
+        success: "Email verification code sent. Check your inbox (or server logs in demo mode).",
+      };
+    }
+
+    console.log(`[REGISTER VERIFY] Phone code for ${phoneNumber}: ${generatedCode}`);
+    return {
+      success: "Phone verification code sent. Check your phone/WhatsApp (or server logs in demo mode).",
+    };
+  }
+
   const parsed = registerSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
-    confirmEmail: formData.get("confirmEmail"),
     phoneNumber: formData.get("phoneNumber"),
-    confirmPhoneNumber: formData.get("confirmPhoneNumber"),
     emailCode: formData.get("emailCode"),
     phoneCode: formData.get("phoneCode"),
     country: formData.get("country"),
@@ -98,9 +167,7 @@ export async function registerAction(
   const {
     name,
     email,
-    confirmEmail,
     phoneNumber,
-    confirmPhoneNumber,
     emailCode,
     phoneCode,
     country,
@@ -113,14 +180,6 @@ export async function registerAction(
     password,
     role,
   } = parsed.data;
-
-  if (email !== confirmEmail) {
-    return { error: "Email and confirm email do not match." };
-  }
-
-  if (phoneNumber !== confirmPhoneNumber) {
-    return { error: "Phone number and confirm phone number do not match." };
-  }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -136,51 +195,17 @@ export async function registerAction(
   });
 
   const now = new Date();
-  const submittedEmailCode = emailCode ?? "";
-  const submittedPhoneCode = phoneCode ?? "";
-  const hasSubmittedCodes = submittedEmailCode.length > 0 || submittedPhoneCode.length > 0;
   const codeMissingOrInvalid =
     !verification ||
     verification.phone !== phoneNumber ||
     verification.expiresAt < now ||
-    verification.emailCode !== submittedEmailCode ||
-    verification.phoneCode !== submittedPhoneCode;
+    verification.emailCode !== emailCode ||
+    verification.phoneCode !== phoneCode;
 
   if (codeMissingOrInvalid) {
-    const generatedEmailCode = String(Math.floor(100000 + Math.random() * 900000));
-    const generatedPhoneCode = String(Math.floor(100000 + Math.random() * 900000));
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    await prisma.registrationVerification.upsert({
-      where: { email },
-      update: {
-        phone: phoneNumber,
-        emailCode: generatedEmailCode,
-        phoneCode: generatedPhoneCode,
-        expiresAt,
-      },
-      create: {
-        email,
-        phone: phoneNumber,
-        emailCode: generatedEmailCode,
-        phoneCode: generatedPhoneCode,
-        expiresAt,
-      },
-    });
-
-    // Demo-friendly fallback: logs code when email/SMS providers are not configured.
-    console.log(`[REGISTER VERIFY] Email code for ${email}: ${generatedEmailCode}`);
-    console.log(`[REGISTER VERIFY] Phone code for ${phoneNumber}: ${generatedPhoneCode}`);
-
-    return hasSubmittedCodes
-      ? {
-          error:
-            "Invalid or expired verification code. New codes have been issued. Check your email/phone (or server logs in demo), then submit again.",
-        }
-      : {
-          error:
-            "Verification codes sent. Check your email/phone (or server logs in demo), enter codes, and submit again.",
-        };
+    return {
+      error: "Invalid or expired verification codes. Please use Verify email/Verify phone number and try again.",
+    };
   }
 
   const passwordHash = await bcrypt.hash(password, 10);

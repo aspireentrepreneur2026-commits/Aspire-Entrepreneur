@@ -41,15 +41,8 @@ function Input({
 export function RegisterForm() {
   const [role, setRole] = useState<Role>("FOUNDER");
   const [email, setEmail] = useState("");
-  const [confirmEmail, setConfirmEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [confirmPhoneNumber, setConfirmPhoneNumber] = useState("");
   const [state, action, pending] = useActionState(registerAction, initialState);
-  const showEmailCode = email.trim().length > 0 && confirmEmail.trim().length > 0 && email === confirmEmail;
-  const showPhoneCode =
-    phoneNumber.trim().length > 0 &&
-    confirmPhoneNumber.trim().length > 0 &&
-    phoneNumber === confirmPhoneNumber;
 
   return (
     <form action={action} className="space-y-4">
@@ -95,18 +88,27 @@ export function RegisterForm() {
                   onChange={(event) => setEmail(event.target.value)}
                   className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
                 />
+                <button
+                  type="submit"
+                  name="intent"
+                  value="verifyEmail"
+                  formNoValidate
+                  className="mt-1 text-xs text-cyan-300 underline underline-offset-2 hover:text-cyan-200"
+                >
+                  Verify email
+                </button>
               </div>
               <div className="space-y-1">
-                <label htmlFor="confirmEmail" className="text-sm font-medium text-slate-300">
-                  Confirm email
+                <label htmlFor="emailCode" className="text-sm font-medium text-slate-300">
+                  Email code
                 </label>
                 <input
-                  id="confirmEmail"
-                  name="confirmEmail"
-                  type="email"
+                  id="emailCode"
+                  name="emailCode"
                   required
-                  value={confirmEmail}
-                  onChange={(event) => setConfirmEmail(event.target.value)}
+                  minLength={6}
+                  maxLength={6}
+                  placeholder="123456"
                   className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
                 />
               </div>
@@ -125,42 +127,31 @@ export function RegisterForm() {
                   placeholder="+923001234567"
                   className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
                 />
+                <button
+                  type="submit"
+                  name="intent"
+                  value="verifyPhone"
+                  formNoValidate
+                  className="mt-1 text-xs text-cyan-300 underline underline-offset-2 hover:text-cyan-200"
+                >
+                  Verify phone number
+                </button>
               </div>
               <div className="space-y-1">
-                <label htmlFor="confirmPhoneNumber" className="text-sm font-medium text-slate-300">
-                  Confirm phone number
+                <label htmlFor="phoneCode" className="text-sm font-medium text-slate-300">
+                  Phone/WhatsApp code
                 </label>
                 <input
-                  id="confirmPhoneNumber"
-                  name="confirmPhoneNumber"
+                  id="phoneCode"
+                  name="phoneCode"
                   required
-                  value={confirmPhoneNumber}
-                  onChange={(event) => setConfirmPhoneNumber(event.target.value)}
-                  placeholder="+923001234567"
+                  minLength={6}
+                  maxLength={6}
+                  placeholder="654321"
                   className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
                 />
               </div>
             </div>
-            {showEmailCode || showPhoneCode ? (
-              <div className="grid gap-2 sm:grid-cols-2">
-                {showEmailCode ? (
-                  <Input id="emailCode" name="emailCode" label="Email code" required placeholder="123456" />
-                ) : (
-                  <div />
-                )}
-                {showPhoneCode ? (
-                  <Input
-                    id="phoneCode"
-                    name="phoneCode"
-                    label="Phone/WhatsApp code"
-                    required
-                    placeholder="654321"
-                  />
-                ) : (
-                  <div />
-                )}
-              </div>
-            ) : null}
             <div className="grid gap-2 sm:grid-cols-2">
               <Input id="country" name="country" label="Country" required />
               <Input id="location" name="location" label="Location" required />
@@ -292,13 +283,15 @@ export function RegisterForm() {
       </div>
 
       <p className="text-xs text-slate-400">
-        First submit sends verification codes. Submit again with both codes to complete account creation.
+        Use the verify links to receive codes first, then enter both codes and click Create account.
       </p>
       {state?.error ? <p className="text-sm text-red-400">{state.error}</p> : null}
       {state?.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
 
       <button
         type="submit"
+        name="intent"
+        value="createAccount"
         disabled={pending}
         className="w-full rounded-md bg-cyan-600 px-3 py-2 font-medium text-white hover:bg-cyan-700 disabled:opacity-60"
       >
