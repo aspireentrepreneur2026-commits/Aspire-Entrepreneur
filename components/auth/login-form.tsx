@@ -9,15 +9,14 @@ export function LoginForm() {
   const [state, action, pending] = useActionState(loginAction, initialState);
 
   return (
-    <form
-      action={action}
-      className="space-y-4 rounded-2xl border border-indigo-100 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
-    >
-      <h1 className="text-2xl font-semibold text-slate-900">Sign in</h1>
-      <p className="text-sm text-slate-600">Access your founder, mentor, or investor account.</p>
+    <form action={action} className="space-y-4">
+      <h1 className="text-2xl font-semibold text-white">Sign in to your account</h1>
+      <p className="text-sm text-slate-400">
+        Access your founder, mentor, investor, or admin workspace.
+      </p>
 
       <div className="space-y-1">
-        <label htmlFor="email" className="text-sm font-medium text-slate-700">
+        <label htmlFor="email" className="text-sm font-medium text-slate-300">
           Email
         </label>
         <input
@@ -25,12 +24,12 @@ export function LoginForm() {
           name="email"
           type="email"
           required
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
+          className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
         />
       </div>
 
       <div className="space-y-1">
-        <label htmlFor="password" className="text-sm font-medium text-slate-700">
+        <label htmlFor="password" className="text-sm font-medium text-slate-300">
           Password
         </label>
         <input
@@ -38,7 +37,7 @@ export function LoginForm() {
           name="password"
           type="password"
           required
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
+          className="w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
         />
       </div>
 
@@ -47,7 +46,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-md bg-indigo-600 px-3 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+        className="w-full rounded-md bg-cyan-600 px-3 py-2 font-medium text-white hover:bg-cyan-700 disabled:opacity-60"
       >
         {pending ? "Signing in..." : "Sign in"}
       </button>

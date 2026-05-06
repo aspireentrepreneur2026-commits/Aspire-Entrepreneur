@@ -4,452 +4,303 @@ import { useActionState, useState } from "react";
 import { registerAction } from "@/app/actions/auth";
 
 const initialState = undefined;
+type Role = "FOUNDER" | "MENTOR" | "INVESTOR";
+
+function Input({
+  id,
+  name,
+  label,
+  type = "text",
+  required = false,
+  placeholder,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  type?: string;
+  required?: boolean;
+  placeholder?: string;
+}) {
+  return (
+    <div className="space-y-1">
+      <label htmlFor={id} className="text-sm font-medium text-slate-300">
+        {label}
+      </label>
+      <input
+        id={id}
+        name={name}
+        type={type}
+        required={required}
+        placeholder={placeholder}
+        className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
+      />
+    </div>
+  );
+}
 
 export function RegisterForm() {
-  const [role, setRole] = useState<"FOUNDER" | "MENTOR" | "INVESTOR">("FOUNDER");
+  const [role, setRole] = useState<Role>("FOUNDER");
+  const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [confirmPhoneNumber, setConfirmPhoneNumber] = useState("");
   const [state, action, pending] = useActionState(registerAction, initialState);
+  const showEmailCode = email.trim().length > 0 && confirmEmail.trim().length > 0 && email === confirmEmail;
+  const showPhoneCode =
+    phoneNumber.trim().length > 0 &&
+    confirmPhoneNumber.trim().length > 0 &&
+    phoneNumber === confirmPhoneNumber;
 
   return (
-    <form
-      action={action}
-      className="space-y-4 rounded-2xl border border-indigo-100 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.08)]"
-    >
-      <h1 className="text-2xl font-semibold text-slate-900">Create account</h1>
-      <p className="text-sm text-slate-600">Join the platform and pick your role to get started.</p>
+    <form action={action} className="space-y-4">
+      <div className="grid gap-5 lg:grid-cols-2">
+        <section className="space-y-4 rounded-xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900 p-4 lg:p-5">
+          <p className="text-[11px] uppercase tracking-[0.18em] text-indigo-300">Aspire Entrepreneur</p>
+          <h2 className="text-3xl font-semibold leading-tight">
+            Build a professional profile and join a serious startup network.
+          </h2>
+          <p className="text-sm text-slate-300">
+            Founders, mentors, and investors each get a dedicated role-based workspace.
+          </p>
 
-      <div className="space-y-1">
-        <label htmlFor="name" className="text-sm font-medium text-slate-700">
-          Full name
-        </label>
-        <input
-          id="name"
-          name="name"
-          required
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-        />
-      </div>
-
-      <div className="space-y-1">
-        <label htmlFor="email" className="text-sm font-medium text-slate-700">
-          Email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-        />
-      </div>
-      <div className="space-y-1">
-        <label htmlFor="confirmEmail" className="text-sm font-medium text-slate-700">
-          Confirm email
-        </label>
-        <input
-          id="confirmEmail"
-          name="confirmEmail"
-          type="email"
-          required
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-        />
-      </div>
-
-      <div className="space-y-1">
-        <label htmlFor="phoneNumber" className="text-sm font-medium text-slate-700">
-          Phone number (WhatsApp preferred)
-        </label>
-        <input
-          id="phoneNumber"
-          name="phoneNumber"
-          required
-          placeholder="+923001234567"
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-        />
-      </div>
-      <div className="space-y-1">
-        <label htmlFor="confirmPhoneNumber" className="text-sm font-medium text-slate-700">
-          Confirm phone number
-        </label>
-        <input
-          id="confirmPhoneNumber"
-          name="confirmPhoneNumber"
-          required
-          placeholder="+923001234567"
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-        />
-      </div>
-
-      <div className="grid gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 md:grid-cols-2">
-        <div className="space-y-1">
-          <label htmlFor="emailCode" className="text-sm font-medium text-slate-700">
-            Email verification code
-          </label>
-          <input
-            id="emailCode"
-            name="emailCode"
-            required
-            minLength={6}
-            maxLength={6}
-            placeholder="123456"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="phoneCode" className="text-sm font-medium text-slate-700">
-            Phone/WhatsApp verification code
-          </label>
-          <input
-            id="phoneCode"
-            name="phoneCode"
-            required
-            minLength={6}
-            maxLength={6}
-            placeholder="654321"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-          />
-        </div>
-        <p className="text-xs text-slate-600 md:col-span-2">
-          First submit sends verification codes. Submit again with both codes to complete account creation.
-        </p>
-      </div>
-
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="space-y-1">
-          <label htmlFor="country" className="text-sm font-medium text-slate-700">
-            Country
-          </label>
-          <input
-            id="country"
-            name="country"
-            required
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="location" className="text-sm font-medium text-slate-700">
-            City / Location
-          </label>
-          <input
-            id="location"
-            name="location"
-            required
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="experienceLevel" className="text-sm font-medium text-slate-700">
-            Experience level
-          </label>
-          <input
-            id="experienceLevel"
-            name="experienceLevel"
-            required
-            placeholder="Beginner / Intermediate / Expert"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-          />
-        </div>
-        <div className="space-y-1">
-          <label htmlFor="primaryGoal" className="text-sm font-medium text-slate-700">
-            Primary goal
-          </label>
-          <input
-            id="primaryGoal"
-            name="primaryGoal"
-            required
-            placeholder="Raise funding / Find mentor / Invest"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-          />
-        </div>
-      </div>
-
-      <div className="space-y-1">
-        <label htmlFor="joinAim" className="text-sm font-medium text-slate-700">
-          What is your main aim to join Aspire Entrepreneur portal?
-        </label>
-        <textarea
-          id="joinAim"
-          name="joinAim"
-          required
-          rows={3}
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-        />
-      </div>
-
-      <div className="space-y-1">
-        <label htmlFor="aboutYourself" className="text-sm font-medium text-slate-700">
-          Tell me about yourself
-        </label>
-        <textarea
-          id="aboutYourself"
-          name="aboutYourself"
-          required
-          rows={4}
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-        />
-      </div>
-
-      <div className="space-y-1">
-        <label htmlFor="linkedinUrl" className="text-sm font-medium text-slate-700">
-          LinkedIn URL (optional)
-        </label>
-        <input
-          id="linkedinUrl"
-          name="linkedinUrl"
-          type="url"
-          placeholder="https://www.linkedin.com/in/username"
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-        />
-      </div>
-
-      <div className="space-y-1">
-        <label htmlFor="password" className="text-sm font-medium text-slate-700">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-        />
-      </div>
-
-      <div className="space-y-1">
-        <label htmlFor="role" className="text-sm font-medium text-slate-700">
-          Role
-        </label>
-        <select
-          id="role"
-          name="role"
-          required
-          value={role}
-          onChange={(event) => setRole(event.target.value as "FOUNDER" | "MENTOR" | "INVESTOR")}
-          className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-        >
-          <option value="FOUNDER">Founder</option>
-          <option value="MENTOR">Mentor</option>
-          <option value="INVESTOR">Investor</option>
-        </select>
-      </div>
-
-      {role === "FOUNDER" ? (
-        <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm font-semibold text-slate-800">Founder profile details</p>
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-1">
-              <label htmlFor="startupName" className="text-sm font-medium text-slate-700">
-                Startup name
-              </label>
-              <input
-                id="startupName"
-                name="startupName"
-                required
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-lg border border-slate-700 bg-slate-900/70 p-2 text-xs text-slate-200">
+              Founder opportunities
             </div>
-            <div className="space-y-1">
-              <label htmlFor="stage" className="text-sm font-medium text-slate-700">
-                Stage
-              </label>
-              <input
-                id="stage"
-                name="stage"
-                required
-                placeholder="Idea / MVP / Growth"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
+            <div className="rounded-lg border border-slate-700 bg-slate-900/70 p-2 text-xs text-slate-200">
+              Mentor network
             </div>
-            <div className="space-y-1">
-              <label htmlFor="industry" className="text-sm font-medium text-slate-700">
-                Industry
-              </label>
-              <input
-                id="industry"
-                name="industry"
-                required
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
+            <div className="rounded-lg border border-slate-700 bg-slate-900/70 p-2 text-xs text-slate-200">
+              Investor pipeline
             </div>
-            <div className="space-y-1">
-              <label htmlFor="teamSize" className="text-sm font-medium text-slate-700">
-                Team size
-              </label>
-              <input
-                id="teamSize"
-                name="teamSize"
-                placeholder="5-10"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="fundingNeeded" className="text-sm font-medium text-slate-700">
-                Funding needed
-              </label>
-              <input
-                id="fundingNeeded"
-                name="fundingNeeded"
-                placeholder="$20k-$50k"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="traction" className="text-sm font-medium text-slate-700">
-                Traction
-              </label>
-              <input
-                id="traction"
-                name="traction"
-                placeholder="MRR / active users"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
+            <div className="rounded-lg border border-slate-700 bg-slate-900/70 p-2 text-xs text-slate-200">
+              Trusted verification
             </div>
           </div>
-        </div>
-      ) : null}
 
-      {role === "MENTOR" ? (
-        <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm font-semibold text-slate-800">Mentor profile details</p>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="space-y-3 rounded-xl border border-slate-700 bg-[#0f172a] p-3">
+            <p className="text-xs font-semibold text-cyan-300">Column 1 - Identity & Verification</p>
+            <Input id="name" name="name" label="Full name" required />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label htmlFor="email" className="text-sm font-medium text-slate-300">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="confirmEmail" className="text-sm font-medium text-slate-300">
+                  Confirm email
+                </label>
+                <input
+                  id="confirmEmail"
+                  name="confirmEmail"
+                  type="email"
+                  required
+                  value={confirmEmail}
+                  onChange={(event) => setConfirmEmail(event.target.value)}
+                  className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label htmlFor="phoneNumber" className="text-sm font-medium text-slate-300">
+                  Phone number (WhatsApp preferred)
+                </label>
+                <input
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  required
+                  value={phoneNumber}
+                  onChange={(event) => setPhoneNumber(event.target.value)}
+                  placeholder="+923001234567"
+                  className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div className="space-y-1">
+                <label htmlFor="confirmPhoneNumber" className="text-sm font-medium text-slate-300">
+                  Confirm phone number
+                </label>
+                <input
+                  id="confirmPhoneNumber"
+                  name="confirmPhoneNumber"
+                  required
+                  value={confirmPhoneNumber}
+                  onChange={(event) => setConfirmPhoneNumber(event.target.value)}
+                  placeholder="+923001234567"
+                  className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
+                />
+              </div>
+            </div>
+            {showEmailCode || showPhoneCode ? (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {showEmailCode ? (
+                  <Input id="emailCode" name="emailCode" label="Email code" required placeholder="123456" />
+                ) : (
+                  <div />
+                )}
+                {showPhoneCode ? (
+                  <Input
+                    id="phoneCode"
+                    name="phoneCode"
+                    label="Phone/WhatsApp code"
+                    required
+                    placeholder="654321"
+                  />
+                ) : (
+                  <div />
+                )}
+              </div>
+            ) : null}
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Input id="country" name="country" label="Country" required />
+              <Input id="location" name="location" label="Location" required />
+            </div>
+            <Input id="password" name="password" label="Password" type="password" required />
             <div className="space-y-1">
-              <label htmlFor="yearsExperience" className="text-sm font-medium text-slate-700">
-                Years of experience
+              <label htmlFor="role" className="text-sm font-medium text-slate-300">
+                Role
               </label>
-              <input
-                id="yearsExperience"
-                name="yearsExperience"
-                type="number"
-                min={1}
+              <select
+                id="role"
+                name="role"
                 required
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="domainExpertise" className="text-sm font-medium text-slate-700">
-                Domain expertise
-              </label>
-              <input
-                id="domainExpertise"
-                name="domainExpertise"
-                required
-                placeholder="SaaS, growth, product"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="pastCompanies" className="text-sm font-medium text-slate-700">
-                Past companies
-              </label>
-              <input
-                id="pastCompanies"
-                name="pastCompanies"
-                placeholder="Google, Daraz"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="mentoringStyle" className="text-sm font-medium text-slate-700">
-                Mentoring style
-              </label>
-              <input
-                id="mentoringStyle"
-                name="mentoringStyle"
-                placeholder="Weekly sessions"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="space-y-1 md:col-span-2">
-              <label htmlFor="availability" className="text-sm font-medium text-slate-700">
-                Availability
-              </label>
-              <input
-                id="availability"
-                name="availability"
-                placeholder="Weekends, 4h/week"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
+                value={role}
+                onChange={(event) => setRole(event.target.value as Role)}
+                className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
+              >
+                <option value="FOUNDER">Founder</option>
+                <option value="MENTOR">Mentor</option>
+                <option value="INVESTOR">Investor</option>
+              </select>
             </div>
           </div>
-        </div>
-      ) : null}
+        </section>
 
-      {role === "INVESTOR" ? (
-        <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-sm font-semibold text-slate-800">Investor profile details</p>
-          <div className="grid gap-3 md:grid-cols-2">
-            <div className="space-y-1">
-              <label htmlFor="firmName" className="text-sm font-medium text-slate-700">
-                Firm / fund name
-              </label>
-              <input
-                id="firmName"
-                name="firmName"
-                required
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="checkSizeRange" className="text-sm font-medium text-slate-700">
-                Check size range
-              </label>
-              <input
-                id="checkSizeRange"
-                name="checkSizeRange"
-                required
-                placeholder="$5k-$100k"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="investmentStage" className="text-sm font-medium text-slate-700">
-                Investment stage
-              </label>
-              <input
-                id="investmentStage"
-                name="investmentStage"
-                required
-                placeholder="Pre-seed / Seed"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="space-y-1">
-              <label htmlFor="sectorsOfInterest" className="text-sm font-medium text-slate-700">
-                Sectors of interest
-              </label>
-              <input
-                id="sectorsOfInterest"
-                name="sectorsOfInterest"
-                required
-                placeholder="Fintech, SaaS"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="space-y-1 md:col-span-2">
-              <label htmlFor="preferredGeography" className="text-sm font-medium text-slate-700">
-                Preferred geography
-              </label>
-              <input
-                id="preferredGeography"
-                name="preferredGeography"
-                placeholder="Pakistan, GCC"
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 outline-none focus:border-indigo-500"
-              />
-            </div>
+        <section className="space-y-3 rounded-xl border border-slate-700 bg-slate-900/60 p-4 lg:p-5">
+          <p className="text-xs font-semibold text-indigo-300">Column 2 - Profile Details</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Input
+              id="experienceLevel"
+              name="experienceLevel"
+              label="Experience level"
+              required
+              placeholder="Beginner / Intermediate / Expert"
+            />
+            <Input
+              id="primaryGoal"
+              name="primaryGoal"
+              label="Primary goal"
+              required
+              placeholder="Raise funding / Find mentor / Invest"
+            />
           </div>
-        </div>
-      ) : null}
 
-      {state?.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
-      {state?.success ? (
-        <p className="text-sm text-green-700">
-          {state.success}
-        </p>
-      ) : null}
+          <div className="space-y-1">
+            <label htmlFor="joinAim" className="text-sm font-medium text-slate-300">
+              Main aim to join Aspire Entrepreneur portal
+            </label>
+            <textarea
+              id="joinAim"
+              name="joinAim"
+              required
+              rows={3}
+              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="aboutYourself" className="text-sm font-medium text-slate-300">
+              Tell me about yourself
+            </label>
+            <textarea
+              id="aboutYourself"
+              name="aboutYourself"
+              required
+              rows={4}
+              className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
+            />
+          </div>
+
+          <Input
+            id="linkedinUrl"
+            name="linkedinUrl"
+            label="LinkedIn URL (optional)"
+            type="url"
+            placeholder="https://www.linkedin.com/in/username"
+          />
+
+          {role === "FOUNDER" ? (
+            <div className="space-y-2 rounded-lg border border-cyan-900/50 bg-cyan-950/20 p-3">
+              <p className="text-sm font-semibold text-cyan-300">Founder fields</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Input id="startupName" name="startupName" label="Startup name" required />
+                <Input id="stage" name="stage" label="Stage" required placeholder="Idea/MVP/Growth" />
+                <Input id="industry" name="industry" label="Industry" required />
+                <Input id="teamSize" name="teamSize" label="Team size" />
+                <Input id="fundingNeeded" name="fundingNeeded" label="Funding needed" />
+                <Input id="traction" name="traction" label="Traction" />
+              </div>
+            </div>
+          ) : null}
+
+          {role === "MENTOR" ? (
+            <div className="space-y-2 rounded-lg border border-violet-900/50 bg-violet-950/20 p-3">
+              <p className="text-sm font-semibold text-violet-300">Mentor fields</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Input
+                  id="yearsExperience"
+                  name="yearsExperience"
+                  label="Years of experience"
+                  type="number"
+                  required
+                />
+                <Input id="domainExpertise" name="domainExpertise" label="Domain expertise" required />
+                <Input id="pastCompanies" name="pastCompanies" label="Past companies" />
+                <Input id="mentoringStyle" name="mentoringStyle" label="Mentoring style" />
+                <div className="sm:col-span-2">
+                  <Input id="availability" name="availability" label="Availability" />
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {role === "INVESTOR" ? (
+            <div className="space-y-2 rounded-lg border border-fuchsia-900/50 bg-fuchsia-950/20 p-3">
+              <p className="text-sm font-semibold text-fuchsia-300">Investor fields</p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <Input id="firmName" name="firmName" label="Firm / fund name" required />
+                <Input id="checkSizeRange" name="checkSizeRange" label="Check size range" required />
+                <Input id="investmentStage" name="investmentStage" label="Investment stage" required />
+                <Input id="sectorsOfInterest" name="sectorsOfInterest" label="Sectors of interest" required />
+                <div className="sm:col-span-2">
+                  <Input id="preferredGeography" name="preferredGeography" label="Preferred geography" />
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </section>
+      </div>
+
+      <p className="text-xs text-slate-400">
+        First submit sends verification codes. Submit again with both codes to complete account creation.
+      </p>
+      {state?.error ? <p className="text-sm text-red-400">{state.error}</p> : null}
+      {state?.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
 
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-md bg-indigo-600 px-3 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+        className="w-full rounded-md bg-cyan-600 px-3 py-2 font-medium text-white hover:bg-cyan-700 disabled:opacity-60"
       >
         {pending ? "Creating account..." : "Create account"}
       </button>
