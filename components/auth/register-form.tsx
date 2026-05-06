@@ -8,6 +8,16 @@ import { getFirebaseAuth } from "@/lib/firebase-client";
 const initialState = undefined;
 type Role = "FOUNDER" | "MENTOR" | "INVESTOR";
 
+function normalizePhoneNumber(raw: string): string | null {
+  const input = raw.trim().replace(/[\s()-]/g, "");
+  if (!input) return null;
+  if (input.startsWith("+") && /^\+\d{10,15}$/.test(input)) return input;
+  if (/^0\d{10}$/.test(input)) return `+92${input.slice(1)}`;
+  if (/^92\d{10}$/.test(input)) return `+${input}`;
+  if (/^\d{10,15}$/.test(input)) return `+${input}`;
+  return null;
+}
+
 function Input({
   id,
   name,
@@ -65,8 +75,9 @@ export function RegisterForm() {
   };
 
   const handleSendPhoneCode = async () => {
-    if (!phoneNumber.trim()) {
-      setPhoneStatus("Enter phone number first.");
+    const normalizedPhone = normalizePhoneNumber(phoneNumber);
+    if (!normalizedPhone) {
+      setPhoneStatus("Enter a valid phone in international format, e.g. +923001234567.");
       return;
     }
     setPhonePending(true);
@@ -75,7 +86,8 @@ export function RegisterForm() {
     try {
       const verifier = getRecaptchaVerifier();
       const firebaseAuth = getFirebaseAuth();
-      confirmationRef.current = await signInWithPhoneNumber(firebaseAuth, phoneNumber.trim(), verifier);
+      confirmationRef.current = await signInWithPhoneNumber(firebaseAuth, normalizedPhone, verifier);
+      setPhoneNumber(normalizedPhone);
       setPhoneStatus("Phone OTP sent. Enter the code and click Verify phone number.");
     } catch (error) {
       setPhoneStatus(error instanceof Error ? error.message : "Could not send phone OTP.");
@@ -188,7 +200,7 @@ export function RegisterForm() {
                   required
                   value={phoneNumber}
                   onChange={(event) => setPhoneNumber(event.target.value)}
-                  placeholder="+923001234567"
+                  placeholder="+923001234567 (or 03001234567)"
                   className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
                 />
                 <button
