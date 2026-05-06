@@ -10,7 +10,7 @@ export function LoginForm() {
 
   return (
     <form action={action} className="space-y-4">
-      <h1 className="text-2xl font-semibold text-white">Sign in to your account</h1>
+      <h1 className="text-2xl font-semibold text-white">Log in to your account</h1>
       <p className="text-sm text-slate-400">
         Access your founder, mentor, investor, or admin workspace.
       </p>
