@@ -7,6 +7,8 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth, signIn, signOut } from "@/auth";
 import { getPostAuthRedirectPath } from "@/lib/auth-redirect";
+import { sendEmailVerificationCode } from "@/lib/verification-delivery";
+import { getFirebaseAdminAuth } from "@/lib/firebase-admin";
 
 type AppRole = "FOUNDER" | "MENTOR" | "INVESTOR" | "ADMIN";
 
@@ -15,7 +17,7 @@ const registerSchema = z.object({
   email: z.string().email("Enter a valid email address.").trim().toLowerCase(),
   phoneNumber: z.string().min(10, "Phone number is required."),
   emailCode: z.string().length(6, "Email code must be 6 digits."),
-  phoneCode: z.string().length(6, "Phone code must be 6 digits."),
+  phoneVerificationToken: z.string().min(20, "Please verify your phone number first."),
   country: z.string().min(2, "Country is required."),
   location: z.string().min(2, "Location is required."),
   joinAim: z.string().min(10, "Please share your main aim to join this portal."),
@@ -72,31 +74,21 @@ export async function registerAction(
 ): Promise<ActionState> {
   const intent = String(formData.get("intent") ?? "createAccount");
 
-  if (intent === "verifyEmail" || intent === "verifyPhone") {
+  if (intent === "verifyEmail") {
     const verificationTargetSchema = z.object({
       email: z.string().email("Enter a valid email address.").trim().toLowerCase(),
-      phoneNumber: z.string().min(10, "Enter phone number before requesting code."),
     });
     const targetParsed = verificationTargetSchema.safeParse({
       email: formData.get("email"),
-      phoneNumber: formData.get("phoneNumber"),
     });
     if (!targetParsed.success) {
       return { error: targetParsed.error.issues[0]?.message ?? "Invalid verification request." };
     }
 
-    const { email, phoneNumber } = targetParsed.data;
+    const { email } = targetParsed.data;
     const existingUserByEmail = await prisma.user.findUnique({ where: { email }, select: { id: true } });
     if (existingUserByEmail) {
       return { error: "An account with this email already exists." };
-    }
-
-    const existingUserByPhone = await prisma.user.findUnique({
-      where: { phoneNumber },
-      select: { id: true },
-    });
-    if (existingUserByPhone) {
-      return { error: "An account with this phone number already exists." };
     }
 
     const existingVerification = await prisma.registrationVerification.findUnique({
@@ -108,38 +100,37 @@ export async function registerAction(
       intent === "verifyEmail"
         ? generatedCode
         : existingVerification?.emailCode ?? String(Math.floor(100000 + Math.random() * 900000));
-    const generatedPhoneCode =
-      intent === "verifyPhone"
-        ? generatedCode
-        : existingVerification?.phoneCode ?? String(Math.floor(100000 + Math.random() * 900000));
+    const generatedPhoneCode = existingVerification?.phoneCode ?? "";
+
+    try {
+      await sendEmailVerificationCode(email, generatedCode);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to send verification code right now. Please try again.";
+      return { error: message };
+    }
 
     await prisma.registrationVerification.upsert({
       where: { email },
       update: {
-        phone: phoneNumber,
+        phone: existingVerification?.phone ?? "",
         emailCode: generatedEmailCode,
         phoneCode: generatedPhoneCode,
         expiresAt,
       },
       create: {
         email,
-        phone: phoneNumber,
+        phone: existingVerification?.phone ?? "",
         emailCode: generatedEmailCode,
         phoneCode: generatedPhoneCode,
         expiresAt,
       },
     });
 
-    if (intent === "verifyEmail") {
-      console.log(`[REGISTER VERIFY] Email code for ${email}: ${generatedCode}`);
-      return {
-        success: "Email verification code sent. Check your inbox (or server logs in demo mode).",
-      };
-    }
-
-    console.log(`[REGISTER VERIFY] Phone code for ${phoneNumber}: ${generatedCode}`);
     return {
-      success: "Phone verification code sent. Check your phone/WhatsApp (or server logs in demo mode).",
+      success: "Email verification code sent successfully.",
     };
   }
 
@@ -148,7 +139,7 @@ export async function registerAction(
     email: formData.get("email"),
     phoneNumber: formData.get("phoneNumber"),
     emailCode: formData.get("emailCode"),
-    phoneCode: formData.get("phoneCode"),
+    phoneVerificationToken: formData.get("phoneVerificationToken"),
     country: formData.get("country"),
     location: formData.get("location"),
     joinAim: formData.get("joinAim"),
@@ -169,7 +160,7 @@ export async function registerAction(
     email,
     phoneNumber,
     emailCode,
-    phoneCode,
+    phoneVerificationToken,
     country,
     location,
     joinAim,
@@ -197,15 +188,25 @@ export async function registerAction(
   const now = new Date();
   const codeMissingOrInvalid =
     !verification ||
-    verification.phone !== phoneNumber ||
     verification.expiresAt < now ||
-    verification.emailCode !== emailCode ||
-    verification.phoneCode !== phoneCode;
+    verification.emailCode !== emailCode;
 
   if (codeMissingOrInvalid) {
     return {
-      error: "Invalid or expired verification codes. Please use Verify email/Verify phone number and try again.",
+      error: "Invalid or expired email code. Please use Verify email and try again.",
     };
+  }
+
+  try {
+    const decoded = await getFirebaseAdminAuth().verifyIdToken(phoneVerificationToken);
+    const verifiedPhone = decoded.phone_number ?? "";
+    const normalizedSubmitted = phoneNumber.replace(/\s+/g, "");
+    const normalizedVerified = verifiedPhone.replace(/\s+/g, "");
+    if (!normalizedVerified || normalizedSubmitted !== normalizedVerified) {
+      return { error: "Phone verification failed. Please verify the same phone number and try again." };
+    }
+  } catch {
+    return { error: "Phone verification token is invalid or expired. Please verify phone number again." };
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -320,7 +321,7 @@ export async function registerAction(
   });
 
   return {
-    success: "Account verified and created successfully.",
+    success: "Email and phone verified. Account created successfully.",
   };
 }
 

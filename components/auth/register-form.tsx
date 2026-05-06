@@ -1,7 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
+import { ConfirmationResult, RecaptchaVerifier, signInWithPhoneNumber } from "firebase/auth";
 import { registerAction } from "@/app/actions/auth";
+import { getFirebaseAuth } from "@/lib/firebase-client";
 
 const initialState = undefined;
 type Role = "FOUNDER" | "MENTOR" | "INVESTOR";
@@ -42,7 +44,69 @@ export function RegisterForm() {
   const [role, setRole] = useState<Role>("FOUNDER");
   const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneCode, setPhoneCode] = useState("");
+  const [phoneVerificationToken, setPhoneVerificationToken] = useState("");
+  const [phoneStatus, setPhoneStatus] = useState<string | null>(null);
+  const [phonePending, setPhonePending] = useState(false);
+  const confirmationRef = useRef<ConfirmationResult | null>(null);
   const [state, action, pending] = useActionState(registerAction, initialState);
+
+  const getRecaptchaVerifier = () => {
+    const firebaseAuth = getFirebaseAuth();
+    const authWithVerifier = firebaseAuth as typeof firebaseAuth & {
+      _aspireRecaptcha?: RecaptchaVerifier;
+    };
+    if (!authWithVerifier._aspireRecaptcha) {
+      authWithVerifier._aspireRecaptcha = new RecaptchaVerifier(firebaseAuth, "phone-recaptcha", {
+        size: "invisible",
+      });
+    }
+    return authWithVerifier._aspireRecaptcha;
+  };
+
+  const handleSendPhoneCode = async () => {
+    if (!phoneNumber.trim()) {
+      setPhoneStatus("Enter phone number first.");
+      return;
+    }
+    setPhonePending(true);
+    setPhoneStatus(null);
+    setPhoneVerificationToken("");
+    try {
+      const verifier = getRecaptchaVerifier();
+      const firebaseAuth = getFirebaseAuth();
+      confirmationRef.current = await signInWithPhoneNumber(firebaseAuth, phoneNumber.trim(), verifier);
+      setPhoneStatus("Phone OTP sent. Enter the code and click Verify phone number.");
+    } catch (error) {
+      setPhoneStatus(error instanceof Error ? error.message : "Could not send phone OTP.");
+    } finally {
+      setPhonePending(false);
+    }
+  };
+
+  const handleVerifyPhoneCode = async () => {
+    if (!confirmationRef.current) {
+      setPhoneStatus("Please click Send phone code first.");
+      return;
+    }
+    if (!phoneCode.trim()) {
+      setPhoneStatus("Enter phone code first.");
+      return;
+    }
+    setPhonePending(true);
+    setPhoneStatus(null);
+    try {
+      const userCredential = await confirmationRef.current.confirm(phoneCode.trim());
+      const idToken = await userCredential.user.getIdToken();
+      setPhoneVerificationToken(idToken);
+      setPhoneStatus("Phone number verified successfully.");
+    } catch (error) {
+      setPhoneVerificationToken("");
+      setPhoneStatus(error instanceof Error ? error.message : "Invalid phone code.");
+    } finally {
+      setPhonePending(false);
+    }
+  };
 
   return (
     <form action={action} className="space-y-4">
@@ -128,13 +192,12 @@ export function RegisterForm() {
                   className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
                 />
                 <button
-                  type="submit"
-                  name="intent"
-                  value="verifyPhone"
-                  formNoValidate
-                  className="mt-1 text-xs text-cyan-300 underline underline-offset-2 hover:text-cyan-200"
+                  type="button"
+                  onClick={handleSendPhoneCode}
+                  disabled={phonePending}
+                  className="mt-1 text-xs text-cyan-300 underline underline-offset-2 hover:text-cyan-200 disabled:opacity-60"
                 >
-                  Verify phone number
+                  Send phone code
                 </button>
               </div>
               <div className="space-y-1">
@@ -148,10 +211,23 @@ export function RegisterForm() {
                   minLength={6}
                   maxLength={6}
                   placeholder="654321"
+                  value={phoneCode}
+                  onChange={(event) => setPhoneCode(event.target.value)}
                   className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
                 />
+                <button
+                  type="button"
+                  onClick={handleVerifyPhoneCode}
+                  disabled={phonePending}
+                  className="mt-1 text-xs text-cyan-300 underline underline-offset-2 hover:text-cyan-200 disabled:opacity-60"
+                >
+                  Verify phone number
+                </button>
               </div>
             </div>
+            <input type="hidden" name="phoneVerificationToken" value={phoneVerificationToken} />
+            <div id="phone-recaptcha" />
+            {phoneStatus ? <p className="text-xs text-slate-300">{phoneStatus}</p> : null}
             <div className="grid gap-2 sm:grid-cols-2">
               <Input id="country" name="country" label="Country" required />
               <Input id="location" name="location" label="Location" required />
@@ -283,7 +359,7 @@ export function RegisterForm() {
       </div>
 
       <p className="text-xs text-slate-400">
-        Use the verify links to receive codes first, then enter both codes and click Create account.
+        Verify email via code and verify phone via Firebase OTP, then click Create account.
       </p>
       {state?.error ? <p className="text-sm text-red-400">{state.error}</p> : null}
       {state?.success ? <p className="text-sm text-emerald-400">{state.success}</p> : null}
