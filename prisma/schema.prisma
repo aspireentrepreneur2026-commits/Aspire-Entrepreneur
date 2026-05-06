@@ -19,20 +19,58 @@ enum OnboardingStatus {
   COMPLETED
 }
 
+enum VerificationType {
+  EMAIL
+  PHONE
+}
+
 model User {
   id              String           @id @default(cuid())
   name            String
   email           String           @unique
+  phoneNumber     String?          @unique
+  country         String?
+  location        String?
+  joinAim         String?
+  aboutYourself   String?
+  experienceLevel String?
+  linkedinUrl     String?
+  primaryGoal     String?
   passwordHash    String
   role            UserRole         @default(FOUNDER)
   onboardingStatus OnboardingStatus @default(BASIC)
   image           String?
-  emailVerified DateTime?
+  emailVerified   DateTime?
+  phoneVerifiedAt DateTime?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   founderProfile  FounderProfile?
   mentorProfile   MentorProfile?
   investorProfile InvestorProfile?
+  verificationCodes VerificationCode[]
+}
+
+model VerificationCode {
+  id         String           @id @default(cuid())
+  userId     String
+  type       VerificationType
+  code       String
+  expiresAt  DateTime
+  createdAt  DateTime         @default(now())
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+}
+
+model RegistrationVerification {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  phone      String
+  emailCode  String
+  phoneCode  String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model FounderProfile {

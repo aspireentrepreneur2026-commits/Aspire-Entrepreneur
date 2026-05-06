@@ -7,7 +7,15 @@ export default async function MentorDashboardPage() {
   const [user, mentorProfile] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { name: true, email: true, onboardingStatus: true },
+      select: {
+        name: true,
+        email: true,
+        phoneNumber: true,
+        country: true,
+        location: true,
+        primaryGoal: true,
+        onboardingStatus: true,
+      },
     }),
     prisma.mentorProfile.findUnique({
       where: { userId: session.user.id },
@@ -41,6 +49,11 @@ export default async function MentorDashboardPage() {
               {mentorProfile?.availability ?? "Not set"}
             </p>
             <p className="text-sm text-slate-600">Email: {user?.email ?? session.user.email}</p>
+            <p className="text-sm text-slate-600">Phone: {user?.phoneNumber ?? "Not set"}</p>
+            <p className="text-sm text-slate-600">
+              Location: {user?.location ?? "Not set"}, {user?.country ?? "Not set"}
+            </p>
+            <p className="text-sm text-slate-600">Goal: {user?.primaryGoal ?? "Not set"}</p>
           </div>
         </div>
         <div className="flex flex-wrap gap-3 px-8 pb-8">

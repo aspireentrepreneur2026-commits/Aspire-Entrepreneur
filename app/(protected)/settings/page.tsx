@@ -7,7 +7,11 @@ export default async function SettingsPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { name: true, role: true, email: true },
+    include: {
+      founderProfile: true,
+      mentorProfile: true,
+      investorProfile: true,
+    },
   });
 
   if (!user) {
@@ -28,9 +32,17 @@ export default async function SettingsPage() {
           <p>
             Role: <span className="font-medium">{user.role}</span>
           </p>
+          <p>
+            Email verification:{" "}
+            <span className="font-medium">{user.emailVerified ? "Verified" : "Not verified"}</span>
+          </p>
+          <p>
+            Phone verification:{" "}
+            <span className="font-medium">{user.phoneVerifiedAt ? "Verified" : "Not verified"}</span>
+          </p>
         </div>
       </div>
-      <UpdateProfileForm currentName={user.name} />
+      <UpdateProfileForm user={user} />
     </main>
   );
 }

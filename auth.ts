@@ -33,6 +33,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        if (!user.emailVerified || !user.phoneVerifiedAt) {
+          return null;
+        }
+
         const validPassword = await bcrypt.compare(password, user.passwordHash);
         if (!validPassword) {
           return null;
