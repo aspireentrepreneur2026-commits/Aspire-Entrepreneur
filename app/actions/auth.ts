@@ -16,8 +16,8 @@ const registerSchema = z.object({
   confirmEmail: z.string().email("Confirm email is required.").trim().toLowerCase(),
   phoneNumber: z.string().min(10, "Phone number is required."),
   confirmPhoneNumber: z.string().min(10, "Confirm phone number is required."),
-  emailCode: z.string().length(6, "Email code must be 6 digits."),
-  phoneCode: z.string().length(6, "Phone code must be 6 digits."),
+  emailCode: z.string().trim().optional(),
+  phoneCode: z.string().trim().optional(),
   country: z.string().min(2, "Country is required."),
   location: z.string().min(2, "Location is required."),
   joinAim: z.string().min(10, "Please share your main aim to join this portal."),
@@ -136,12 +136,15 @@ export async function registerAction(
   });
 
   const now = new Date();
+  const submittedEmailCode = emailCode ?? "";
+  const submittedPhoneCode = phoneCode ?? "";
+  const hasSubmittedCodes = submittedEmailCode.length > 0 || submittedPhoneCode.length > 0;
   const codeMissingOrInvalid =
     !verification ||
     verification.phone !== phoneNumber ||
     verification.expiresAt < now ||
-    verification.emailCode !== emailCode ||
-    verification.phoneCode !== phoneCode;
+    verification.emailCode !== submittedEmailCode ||
+    verification.phoneCode !== submittedPhoneCode;
 
   if (codeMissingOrInvalid) {
     const generatedEmailCode = String(Math.floor(100000 + Math.random() * 900000));
@@ -169,10 +172,15 @@ export async function registerAction(
     console.log(`[REGISTER VERIFY] Email code for ${email}: ${generatedEmailCode}`);
     console.log(`[REGISTER VERIFY] Phone code for ${phoneNumber}: ${generatedPhoneCode}`);
 
-    return {
-      error:
-        "Verification codes sent. Check your email/phone (or server logs in demo), enter codes, and submit again.",
-    };
+    return hasSubmittedCodes
+      ? {
+          error:
+            "Invalid or expired verification code. New codes have been issued. Check your email/phone (or server logs in demo), then submit again.",
+        }
+      : {
+          error:
+            "Verification codes sent. Check your email/phone (or server logs in demo), enter codes, and submit again.",
+        };
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
