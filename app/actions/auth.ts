@@ -134,6 +134,29 @@ export async function registerAction(
     };
   }
 
+  if (intent === "verifyEmailCode") {
+    const verifyCodeSchema = z.object({
+      email: z.string().email("Enter a valid email address.").trim().toLowerCase(),
+      emailCode: z.string().length(6, "Email code must be 6 digits."),
+    });
+    const verifyParsed = verifyCodeSchema.safeParse({
+      email: formData.get("email"),
+      emailCode: formData.get("emailCode"),
+    });
+    if (!verifyParsed.success) {
+      return { error: verifyParsed.error.issues[0]?.message ?? "Invalid email verification request." };
+    }
+
+    const { email, emailCode } = verifyParsed.data;
+    const verification = await prisma.registrationVerification.findUnique({ where: { email } });
+    const now = new Date();
+    if (!verification || verification.expiresAt < now || verification.emailCode !== emailCode) {
+      return { error: "Invalid or expired email code. Please click Verify email to get a new code." };
+    }
+
+    return { success: "Email code verified successfully." };
+  }
+
   const parsed = registerSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),

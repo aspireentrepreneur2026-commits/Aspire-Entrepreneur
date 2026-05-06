@@ -187,6 +187,15 @@ export function RegisterForm() {
                   placeholder="123456"
                   className="w-full rounded-md border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 outline-none focus:border-indigo-500"
                 />
+                <button
+                  type="submit"
+                  name="intent"
+                  value="verifyEmailCode"
+                  formNoValidate
+                  className="mt-1 text-xs text-cyan-300 underline underline-offset-2 hover:text-cyan-200"
+                >
+                  Verify email code
+                </button>
               </div>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
