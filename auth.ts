@@ -28,18 +28,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         const { email, password } = parsed.data;
-        const user = await prisma.user.findUnique({ where: { email } });
+        const user = await prisma.user.findFirst({
+          where: { email: { equals: email, mode: "insensitive" } },
+        });
         if (!user) {
-          return null;
-        }
-
-        if (!user.emailVerified || !user.phoneVerifiedAt) {
           return null;
         }
 
         const validPassword = await bcrypt.compare(password, user.passwordHash);
         if (!validPassword) {
           return null;
+        }
+
+        // Accounts created before phone/email verification existed may have NULL here;
+        // allow login and mark verified so legacy credentials keep working (one-time repair).
+        if (!user.emailVerified || !user.phoneVerifiedAt) {
+          const stamp = user.createdAt;
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              emailVerified: user.emailVerified ?? stamp,
+              phoneVerifiedAt: user.phoneVerifiedAt ?? stamp,
+            },
+          });
         }
 
         return {

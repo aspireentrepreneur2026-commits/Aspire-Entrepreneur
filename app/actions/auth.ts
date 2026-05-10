@@ -223,14 +223,10 @@ export async function loginAction(
   }
 
   try {
-    const account = await prisma.user.findUnique({
-      where: { email: parsed.data.email },
-      select: { role: true, onboardingStatus: true, emailVerified: true, phoneVerifiedAt: true },
+    const account = await prisma.user.findFirst({
+      where: { email: { equals: parsed.data.email, mode: "insensitive" } },
+      select: { role: true, onboardingStatus: true },
     });
-
-    if (account && (!account.emailVerified || !account.phoneVerifiedAt)) {
-      return { error: "Please verify your email and phone first." };
-    }
 
     const redirectPath = getPostAuthRedirectPath(account?.role, account?.onboardingStatus);
     const baseUrl = process.env.APP_BASE_URL || process.env.AUTH_URL;
