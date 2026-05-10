@@ -3,7 +3,7 @@ import type { FeedAttachmentKind } from "@prisma/client";
 /** Allow https URLs plus our locally stored feed uploads. */
 export function isAllowedFeedMediaUrl(raw: string): boolean {
   const s = raw.trim();
-  if (/^\/uploads\/feed\/[a-zA-Z0-9._-]+$/.test(s)) return true;
+  if (/^\/uploads\/feed\/[^/]+$/.test(s) && !s.includes("..")) return true;
   try {
     const u = new URL(s);
     return u.protocol === "https:" || u.protocol === "http:";

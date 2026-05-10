@@ -36,7 +36,7 @@ export function FeedPostCard({
   return (
     <article
       id={`post-${post.id}`}
-      className="relative scroll-mt-28 overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-sm"
+      className="relative scroll-mt-28 rounded-lg border border-slate-200/90 bg-white shadow-sm"
     >
       <header className="flex gap-3 p-4 pb-2">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-600 to-slate-800 text-lg font-semibold text-white shadow-inner">

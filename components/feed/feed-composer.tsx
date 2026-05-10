@@ -201,7 +201,7 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
     <form
       ref={formRef}
       action={action}
-      className="overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-sm"
+      className="relative z-10 rounded-lg border border-slate-200/90 bg-white shadow-sm"
     >
       <div className="flex gap-3 border-b border-slate-100 p-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#0a66c2] to-[#004182] text-lg font-semibold text-white shadow-inner">
@@ -229,7 +229,7 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
           className="w-full resize-y rounded-lg border-0 bg-white px-2 py-2 text-[15px] leading-relaxed text-slate-900 outline-none ring-0 placeholder:text-slate-400 focus:placeholder:text-slate-300"
         />
 
-        <textarea name="attachmentsJson" value={attachmentsJson} readOnly tabIndex={-1} className="sr-only" aria-hidden />
+        <input type="hidden" name="attachmentsJson" value={attachmentsJson} />
       </div>
 
       {chips.length > 0 ? (
@@ -348,7 +348,7 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
             : null}
       </p>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-4 py-3">
+      <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 overflow-visible border-t border-slate-100 bg-slate-50/70 px-4 py-3">
       <input
         ref={imageInputRef}
         type="file"
@@ -387,7 +387,7 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
             +
           </button>
           {menuOpen ? (
-            <div className="absolute left-0 top-full z-40 mt-2 w-60 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 text-sm shadow-xl">
+            <div className="absolute bottom-full left-0 z-[100] mb-2 w-60 rounded-xl border border-slate-200 bg-white py-1 text-sm shadow-xl">
               <button
                 type="button"
                 className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-slate-800 hover:bg-slate-50"
