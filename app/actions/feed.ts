@@ -5,25 +5,18 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import type { FeedAttachmentKind } from "@prisma/client";
+import { inferFeedAttachmentKind, isAllowedFeedMediaUrl } from "@/lib/feed-attachment";
 
 export type FeedActionState = { error?: string; success?: string };
 
-function inferAttachmentKind(url: string): FeedAttachmentKind {
-  const u = url.toLowerCase();
-  if (/\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?|#|$)/i.test(u)) {
-    return "IMAGE";
-  }
-  if (
-    /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(u) ||
-    /youtube\.com|youtu\.be|vimeo\.com|loom\.com/.test(u)
-  ) {
-    return "VIDEO";
-  }
-  return "LINK";
-}
+const attachmentEntrySchema = z.object({
+  url: z.string().refine(isAllowedFeedMediaUrl, "Invalid media URL."),
+  kind: z.enum(["IMAGE", "VIDEO", "LINK"]).optional(),
+});
 
 const createPostSchema = z.object({
   body: z.string().trim().min(1, "Write something for your post.").max(8000, "Post is too long."),
+  attachmentsJson: z.string().optional(),
   urlsText: z.string().optional(),
 });
 
@@ -38,27 +31,45 @@ export async function createFeedPost(
 
   const parsed = createPostSchema.safeParse({
     body: formData.get("body"),
+    attachmentsJson: formData.get("attachmentsJson") ?? "",
     urlsText: formData.get("urls") ?? "",
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Invalid post." };
   }
 
-  const lines = parsed.data.urlsText
-    ? String(parsed.data.urlsText)
-        .split(/\r?\n/)
-        .map((s) => s.trim())
-        .filter(Boolean)
-    : [];
-
-  const urlSchema = z.string().url("Each line must be a valid URL (https://…).");
   const attachments: { url: string; kind: FeedAttachmentKind }[] = [];
-  for (const line of lines.slice(0, 10)) {
-    const urlCheck = urlSchema.safeParse(line);
-    if (!urlCheck.success) {
-      return { error: urlCheck.error.issues[0]?.message ?? "Invalid URL in media list." };
+  const metaRaw = parsed.data.attachmentsJson?.trim();
+
+  if (metaRaw) {
+    let parsedItems: unknown;
+    try {
+      parsedItems = JSON.parse(metaRaw);
+    } catch {
+      return { error: "Invalid attachments data." };
     }
-    attachments.push({ url: line, kind: inferAttachmentKind(line) });
+    const rows = z.array(attachmentEntrySchema).safeParse(parsedItems);
+    if (!rows.success) {
+      return { error: rows.error.issues[0]?.message ?? "Invalid attachments." };
+    }
+    for (const row of rows.data.slice(0, 10)) {
+      const kind = row.kind ?? inferFeedAttachmentKind(row.url);
+      attachments.push({ url: row.url.trim(), kind });
+    }
+  } else {
+    const lines = parsed.data.urlsText
+      ? String(parsed.data.urlsText)
+          .split(/\r?\n/)
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : [];
+
+    for (const line of lines.slice(0, 10)) {
+      if (!isAllowedFeedMediaUrl(line)) {
+        return { error: "Each attachment must be a valid https URL or an uploaded file path." };
+      }
+      attachments.push({ url: line, kind: inferFeedAttachmentKind(line) });
+    }
   }
 
   await prisma.feedPost.create({
