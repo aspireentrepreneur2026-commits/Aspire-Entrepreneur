@@ -95,7 +95,13 @@ export function UpdateProfileForm({ user }: Props) {
         <Field id="location" label="Location" defaultValue={user.location} required />
         <Field id="experienceLevel" label="Experience level" defaultValue={user.experienceLevel} required />
         <Field id="primaryGoal" label="Primary goal" defaultValue={user.primaryGoal} required />
-        <Field id="linkedinUrl" label="LinkedIn URL" defaultValue={user.linkedinUrl} placeholder="https://..." />
+        <Field
+          id="linkedinUrl"
+          label="LinkedIn URL"
+          defaultValue={user.linkedinUrl}
+          required
+          placeholder="https://..."
+        />
       </div>
 
       <div className="space-y-1">

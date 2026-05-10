@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { LoginForm } from "@/components/auth/login-form";
 
 export default function LoginPage() {
@@ -20,16 +19,14 @@ export default function LoginPage() {
 
       <section className="hidden items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 p-12 lg:flex">
         <div className="max-w-lg text-center">
-          <p className="text-sm uppercase tracking-[0.18em] text-cyan-300">Aspire Entrepreneur</p>
-          <h2 className="mt-3 text-4xl font-semibold leading-tight">
+          <p className="text-sm text-left uppercase tracking-[0.18em] text-cyan-300">Aspire Entrepreneur</p>
+          <h2 className="mt-3 text-left text-4xl font-semibold leading-tight">
             Connect startups with mentors and investors in one trusted platform.
           </h2>
-          <p className="mt-4 text-slate-300">
+          <p className="mt-4 text-slate-300 text-left">
             Build your profile, unlock opportunities, and collaborate with the right ecosystem.
           </p>
-          <div className="mt-8 flex justify-center">
-            <Image src="/globe.svg" alt="Aspire ecosystem" width={220} height={220} />
-          </div>
+
         </div>
       </section>
     </main>

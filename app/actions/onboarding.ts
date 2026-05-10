@@ -34,6 +34,12 @@ const investorSchema = z.object({
   preferredGeography: z.string().optional(),
 });
 
+const adminSchema = z.object({
+  governanceFocus: z.string().min(5, "Governance focus is required."),
+  moderationPolicy: z.string().min(5, "Moderation policy is required."),
+  portalGoal: z.string().min(5, "Portal goal is required."),
+});
+
 export async function completeFounderOnboarding(
   _prevState: OnboardingActionState | undefined,
   formData: FormData,
@@ -136,4 +142,36 @@ export async function completeInvestorOnboarding(
   });
 
   redirect(getRoleDashboardPath("INVESTOR"));
+}
+
+export async function completeAdminOnboarding(
+  _prevState: OnboardingActionState | undefined,
+  formData: FormData,
+): Promise<OnboardingActionState> {
+  const session = await requireAuth();
+  if (session.user.role !== "ADMIN") {
+    return { error: "Only admins can submit admin onboarding." };
+  }
+
+  const parsed = adminSchema.safeParse({
+    governanceFocus: formData.get("governanceFocus"),
+    moderationPolicy: formData.get("moderationPolicy"),
+    portalGoal: formData.get("portalGoal"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid admin onboarding data." };
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: {
+      primaryGoal: parsed.data.portalGoal,
+      joinAim: parsed.data.governanceFocus,
+      aboutYourself: parsed.data.moderationPolicy,
+      onboardingStatus: "COMPLETED",
+    },
+  });
+
+  redirect(getRoleDashboardPath("ADMIN"));
 }

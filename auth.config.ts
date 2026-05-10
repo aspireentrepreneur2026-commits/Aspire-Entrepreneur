@@ -1,4 +1,7 @@
 import type { NextAuthConfig } from "next-auth";
+import { getRoleDashboardPath } from "@/lib/auth-redirect";
+
+type AppRole = "FOUNDER" | "MENTOR" | "INVESTOR" | "ADMIN";
 
 const authConfig = {
   session: { strategy: "jwt" },
@@ -21,7 +24,8 @@ const authConfig = {
       }
 
       if (isAuthPage && isLoggedIn) {
-        return Response.redirect(new URL("/dashboard", nextUrl));
+        const rolePath = getRoleDashboardPath(auth?.user?.role as AppRole | undefined);
+        return Response.redirect(new URL(rolePath, nextUrl));
       }
 
       return true;

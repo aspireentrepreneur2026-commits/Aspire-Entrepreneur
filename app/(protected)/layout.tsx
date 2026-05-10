@@ -5,7 +5,8 @@ import { requireAuth } from "@/lib/session";
 export default async function ProtectedLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  await requireAuth();
+  const session = await requireAuth();
+  const isAdmin = session.user.role === "ADMIN";
 
   return (
     <>
@@ -21,9 +22,11 @@ export default async function ProtectedLayout({
             <Link href="/settings" className="text-sm font-medium text-slate-600 hover:text-slate-900">
               Settings
             </Link>
-            <Link href="/admin" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-              Admin
-            </Link>
+            {isAdmin ? (
+              <Link href="/dashboard/admin" className="text-sm font-medium text-slate-600 hover:text-slate-900">
+                Admin
+              </Link>
+            ) : null}
           </div>
           <LogoutButton />
         </div>

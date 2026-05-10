@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import {
+  completeAdminOnboarding,
   completeFounderOnboarding,
   completeInvestorOnboarding,
   completeMentorOnboarding,
@@ -59,6 +60,7 @@ export function OnboardingForms({ role }: Props) {
     completeInvestorOnboarding,
     initialState,
   );
+  const [adminState, adminAction, adminPending] = useActionState(completeAdminOnboarding, initialState);
 
   if (role === "FOUNDER") {
     return (
@@ -135,8 +137,26 @@ export function OnboardingForms({ role }: Props) {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6">
-      <p className="text-sm text-slate-700">Admin onboarding is managed by system administrators.</p>
-    </div>
+    <form
+      action={adminAction}
+      className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_12px_35px_rgba(15,23,42,0.06)]"
+    >
+      <Input name="governanceFocus" label="Governance focus" required placeholder="Trust, verification, policy" />
+      <Input
+        name="moderationPolicy"
+        label="Moderation policy summary"
+        required
+        placeholder="How content and users are moderated"
+      />
+      <Input name="portalGoal" label="Main portal goal" required placeholder="Safe and quality ecosystem growth" />
+      {adminState?.error ? <p className="text-sm text-red-600">{adminState.error}</p> : null}
+      <button
+        type="submit"
+        disabled={adminPending}
+        className="rounded-md bg-indigo-600 px-4 py-2 font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+      >
+        {adminPending ? "Saving..." : "Complete onboarding"}
+      </button>
+    </form>
   );
 }
