@@ -26,7 +26,7 @@ function isValidHttpUrl(raw: string) {
   }
 }
 
-export function FeedComposer() {
+export function FeedComposer({ publisherName = "You" }: { publisherName?: string }) {
   const [state, action, pending] = useActionState(createFeedPost, initial);
   const [caps, setCaps] = useState<UploadCaps | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -195,43 +195,45 @@ export function FeedComposer() {
   };
 
   const busy = pending || uploading;
+  const initialLetter = publisherName.trim().charAt(0).toUpperCase() || "Y";
 
   return (
     <form
       ref={formRef}
       action={action}
-      className="space-y-4 rounded-2xl border border-indigo-100 bg-white p-6 shadow-[0_10px_28px_rgba(15,23,42,0.06)]"
+      className="overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-sm"
     >
-      <div>
-        <p className="text-sm font-semibold text-slate-900">Create a post</p>
-        <p className="mt-1 text-xs text-slate-500">
-          Tap <strong className="text-slate-700">+</strong> to upload from your device, add a link, or paste several
-          URLs — similar to other social apps. Captions support emoji; https links in text open in a new tab.
-          {caps?.blob
-            ? " Large files use direct upload to Vercel Blob."
-            : caps
-              ? ` Max ~${caps.multipartMaxMb}MB per file on this deploy without Blob.`
-              : null}
-        </p>
+      <div className="flex gap-3 border-b border-slate-100 p-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#0a66c2] to-[#004182] text-lg font-semibold text-white shadow-inner">
+          {initialLetter}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-semibold leading-tight text-slate-900">Start a post</p>
+          <p className="mt-0.5 text-xs text-slate-500">
+            Post as <span className="font-medium text-slate-700">{publisherName}</span> · Visible to members
+          </p>
+        </div>
       </div>
 
-      {state?.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
-      {state?.success ? <p className="text-sm text-green-700">{state.success}</p> : null}
-      {clientMsg ? <p className="text-sm text-indigo-700">{clientMsg}</p> : null}
+      <div className="space-y-3 px-4 pt-4">
+        {state?.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
+        {state?.success ? <p className="text-sm text-green-700">{state.success}</p> : null}
+        {clientMsg ? <p className="text-sm text-[#0a66c2]">{clientMsg}</p> : null}
 
-      <textarea
-        name="body"
-        required
-        rows={4}
-        maxLength={8000}
-        placeholder="Share an update, idea, milestone, or ask the community… 😊"
-        className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none ring-indigo-500/0 transition focus:border-indigo-400 focus:bg-white focus:ring-2"
-      />
+        <textarea
+          name="body"
+          required
+          rows={5}
+          maxLength={8000}
+          placeholder={`What do you want to talk about, ${publisherName.split(" ")[0] ?? "there"}?`}
+          className="w-full resize-y rounded-lg border-0 bg-white px-2 py-2 text-[15px] leading-relaxed text-slate-900 outline-none ring-0 placeholder:text-slate-400 focus:placeholder:text-slate-300"
+        />
 
-      <textarea name="attachmentsJson" value={attachmentsJson} readOnly tabIndex={-1} className="sr-only" aria-hidden />
+        <textarea name="attachmentsJson" value={attachmentsJson} readOnly tabIndex={-1} className="sr-only" aria-hidden />
+      </div>
 
       {chips.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 px-4 pb-2">
           {chips.map((c) => (
             <span
               key={c.id}
@@ -263,7 +265,7 @@ export function FeedComposer() {
       ) : null}
 
       {(urlPanelOpen || bulkOpen) && (
-        <div className="space-y-3 rounded-xl border border-indigo-100 bg-indigo-50/60 p-4">
+        <div className="mx-4 space-y-3 rounded-lg border border-[#0a66c2]/15 bg-[#e8f3fc] p-4">
           {urlPanelOpen && !bulkOpen ? (
             <div className="flex flex-wrap gap-2">
               <input
@@ -336,6 +338,17 @@ export function FeedComposer() {
         </div>
       )}
 
+      <p className="px-4 pb-2 text-[11px] text-slate-500">
+        <strong className="font-medium text-slate-600">+</strong> Add photos, videos, or links · Emoji & https links
+        supported
+        {caps?.blob
+          ? " · Large files use Vercel Blob."
+          : caps
+            ? ` · Max ~${caps.multipartMaxMb}MB per upload here.`
+            : null}
+      </p>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 bg-slate-50/70 px-4 py-3">
       <input
         ref={imageInputRef}
         type="file"
@@ -359,8 +372,7 @@ export function FeedComposer() {
         }}
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
-        <div className="relative flex items-center gap-2" ref={menuRef}>
+        <div className="relative flex flex-1 items-center gap-2 sm:flex-initial" ref={menuRef}>
           <button
             type="button"
             disabled={busy}
@@ -420,15 +432,15 @@ export function FeedComposer() {
               </button>
             </div>
           ) : null}
-          <span className="hidden text-xs text-slate-500 sm:inline">Add photos, videos, or links</span>
+          <span className="hidden text-xs text-slate-500 xl:inline">Attach</span>
         </div>
 
         <button
           type="submit"
           disabled={busy}
-          className="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+          className="rounded-full bg-[#0a66c2] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#004182] disabled:opacity-60"
         >
-          {pending ? "Publishing…" : uploading ? "Uploading…" : "Publish to feed"}
+          {pending ? "Posting…" : uploading ? "Uploading…" : "Post"}
         </button>
       </div>
     </form>
