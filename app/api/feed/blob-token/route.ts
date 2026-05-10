@@ -2,6 +2,8 @@ import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: Request): Promise<NextResponse> {
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return NextResponse.json({ error: "Blob storage is not configured." }, { status: 503 });

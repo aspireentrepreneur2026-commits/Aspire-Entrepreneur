@@ -6,18 +6,28 @@ const hubs = [
     icon: "💡",
     title: "Ideas & discovery",
     blurb:
-      "Validate concepts, sketch MVPs, and get early feedback — post in the feed with #idea tag (tagging UX coming soon).",
-    bullets: ["Problem-first framing", "Customer interviews checklist", "Competition scan"],
+      "Validate concepts, sketch MVPs, and get early feedback — start in the feed; hashtag-style tagging UX is on the roadmap.",
+    bullets: ["Problem-first framing", "Customer interviews checklist", "Light competition scan"],
     cta: { label: "Start a feed post →", hash: "#feed-start" },
+    accent: {
+      gradient: "from-amber-50 to-orange-50/60",
+      bar: "bg-gradient-to-b from-amber-400 to-orange-500",
+      iconBg: "bg-amber-100 text-amber-900 ring-amber-200/80",
+    },
   },
   {
     id: "new-business-spotlight" as const,
     icon: "🏪",
     title: "New businesses & SMEs",
     blurb:
-      "Operational launches, boutiques, agencies, franchises — separate from VC-style startups. Share traction and hires here.",
+      "Boutiques, agencies, franchises, and SMB launches — separate from VC-style startups. Share traction and hiring needs.",
     bullets: ["Local & digital reach", "Co-founder / partner search", "Supplier & channel intros"],
     cta: { label: "Share an update →", hash: "#feed-start" },
+    accent: {
+      gradient: "from-emerald-50 to-teal-50/50",
+      bar: "bg-gradient-to-b from-emerald-400 to-teal-600",
+      iconBg: "bg-emerald-100 text-emerald-950 ring-emerald-200/80",
+    },
   },
   {
     id: "funding-desk" as const,
@@ -26,6 +36,11 @@ const hubs = [
     blurb: "Warm intros, pitch prep, and deck feedback — full matching & data rooms are on the roadmap.",
     bullets: ["SAFE / bridge basics", "Investor update templates", "Cap table hygiene"],
     cta: { label: "Complete founder profile", href: "/onboarding" as const },
+    accent: {
+      gradient: "from-violet-50 to-fuchsia-50/40",
+      bar: "bg-gradient-to-b from-violet-500 to-fuchsia-600",
+      iconBg: "bg-violet-100 text-violet-950 ring-violet-200/80",
+    },
   },
   {
     id: "mentorship-lab" as const,
@@ -34,25 +49,39 @@ const hubs = [
     blurb:
       "Office hours-style help from mentors — structured programs and peer groups arrive in a future release.",
     bullets: ["Mentor dashboards live", "Group sessions • soon", "Accountability buddies • soon"],
-    cta: { label: "Find mentors →", hash: "#discover" },
+    cta: { label: "Browse member network →", hash: "#network-members" },
+    accent: {
+      gradient: "from-sky-50 to-blue-50/40",
+      bar: "bg-gradient-to-b from-sky-400 to-[#0a66c2]",
+      iconBg: "bg-sky-100 text-sky-950 ring-sky-200/80",
+    },
   },
   {
     id: "startup-jobs" as const,
     icon: "💼",
     title: "Startup jobs",
-    blurb:
-      "Hiring board for early teams — postings, ATS sync, and apply-in-app flows are planned next.",
+    blurb: "Announce roles for early teams — posting board, ATS sync, and apply-in-app flows are planned next.",
     bullets: ["Part-time / intern roles", "Equity-heavy roles", "Remote-friendly tags • soon"],
-    cta: { label: "Use feed to announce hiring →", hash: "#feed-start" },
+    cta: { label: "Announce hiring in the feed →", hash: "#feed-start" },
+    accent: {
+      gradient: "from-slate-50 to-indigo-50/45",
+      bar: "bg-gradient-to-b from-indigo-400 to-slate-700",
+      iconBg: "bg-indigo-100 text-indigo-950 ring-indigo-200/80",
+    },
   },
   {
     id: "learning-grow" as const,
     icon: "📚",
     title: "Learning & playbook",
     blurb:
-      "Curated entrepreneurship micro-lessons — today, use Discovery + feed to learn from peers’ posts.",
+      "Curated entrepreneurship micro-lessons are coming soon — meanwhile, learn from the feed and structured profiles in your member network.",
     bullets: ["GTM teardowns • soon", "Legal & finance primer • soon", "Weekly founder AMA • soon"],
-    cta: { label: "Browse community profiles", hash: "#discover" },
+    cta: { label: "Open member network →", hash: "#network-members" },
+    accent: {
+      gradient: "from-rose-50 to-orange-50/30",
+      bar: "bg-gradient-to-b from-rose-400 to-orange-500",
+      iconBg: "bg-rose-100 text-rose-950 ring-rose-200/80",
+    },
   },
 ];
 
@@ -60,53 +89,78 @@ export function DashboardEntrepreneurHub() {
   return (
     <section
       aria-labelledby="entrepreneur-hub-heading"
-      className="rounded-lg border border-slate-200/90 bg-white p-5 shadow-sm"
+      className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-gradient-to-br from-white via-[#f8fafc] to-[#e8f3fc]/35 shadow-sm ring-1 ring-slate-100"
     >
-      <h2 id="entrepreneur-hub-heading" className="text-lg font-semibold text-slate-900">
-        Founder & business toolkit
-      </h2>
-      <p className="mt-1 text-sm text-slate-600">
-        Mirrors what you see on large social networks — tailored to Aspire: ideas, new ventures, mentorship, hiring,
-        and growth.
-      </p>
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        {hubs.map((h) => (
-          <article
-            key={h.id}
-            id={h.id}
-            className="scroll-mt-[6.5rem] rounded-lg border border-slate-100 bg-slate-50/80 p-4 transition hover:border-[#0a66c2]/25 hover:bg-white"
-          >
-            <div className="flex items-start gap-3">
-              <span className="text-2xl leading-none" aria-hidden>
-                {h.icon}
-              </span>
-              <div className="min-w-0">
-                <h3 className="font-semibold text-slate-900">{h.title}</h3>
-                <p className="mt-1 text-sm text-slate-600">{h.blurb}</p>
-                <ul className="mt-2 list-inside list-disc text-xs text-slate-500">
-                  {h.bullets.map((b) => (
-                    <li key={b}>{b}</li>
-                  ))}
-                </ul>
-                {"href" in h.cta && h.cta.href ? (
-                  <Link
-                    href={h.cta.href}
-                    className="mt-3 inline-block text-sm font-semibold text-[#0a66c2] hover:underline"
+      <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-[#0a66c2]/5 blur-3xl" aria-hidden />
+      <div className="relative p-6 sm:p-8">
+        <div className="max-w-2xl">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#004182]/80">
+            Founder & SME toolkit
+          </p>
+          <h2 id="entrepreneur-hub-heading" className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
+            Founder & business toolkit
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-600">
+            Everything below is geared to Aspire — ideas, new ventures, capital, mentorship, hiring, and learning — in
+            one place beneath your feed.
+          </p>
+        </div>
+
+        <div className="mt-8 grid gap-5 sm:grid-cols-2">
+          {hubs.map((h) => (
+            <article
+              key={h.id}
+              id={h.id}
+              className={`group relative scroll-mt-[6.5rem] overflow-hidden rounded-xl border border-slate-200/70 bg-gradient-to-br ${h.accent.gradient} p-[1px] shadow-sm transition hover:border-[#0a66c2]/25 hover:shadow-md`}
+            >
+              <div className="flex h-full flex-col rounded-[11px] bg-white/92 p-5 backdrop-blur-[2px] sm:p-6">
+                <div
+                  className={`absolute left-0 top-0 hidden h-full w-1 rounded-l-xl sm:block ${h.accent.bar}`}
+                  aria-hidden
+                />
+
+                <div className="flex gap-4 pl-1 sm:pl-3">
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl shadow-sm ring-1 ring-inset ${h.accent.iconBg}`}
+                    aria-hidden
                   >
-                    {h.cta.label}
-                  </Link>
-                ) : (
-                  <Link
-                    href={`/dashboard${(h.cta as { hash: string }).hash}`}
-                    className="mt-3 inline-block text-sm font-semibold text-[#0a66c2] hover:underline"
-                  >
-                    {h.cta.label}
-                  </Link>
-                )}
+                    {h.icon}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-[17px] font-semibold tracking-tight text-slate-900">{h.title}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{h.blurb}</p>
+                    <ul className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-slate-600">
+                      {h.bullets.map((b) => (
+                        <li key={b} className="inline-flex items-center gap-1.5 rounded-full bg-slate-50/90 px-2.5 py-1 ring-1 ring-slate-100">
+                          <span className="h-1 w-1 rounded-full bg-emerald-500" aria-hidden />
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex shrink-0 pl-1 sm:pl-3">
+                  {"href" in h.cta && h.cta.href ? (
+                    <Link
+                      href={h.cta.href}
+                      className="inline-flex items-center rounded-full bg-[#0a66c2] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#004182]"
+                    >
+                      {h.cta.label}
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/dashboard${(h.cta as { hash: string }).hash}`}
+                      className="inline-flex items-center rounded-full border border-[#0a66c2]/25 bg-[#e8f3fc]/70 px-4 py-2 text-sm font-semibold text-[#004182] transition hover:border-[#0a66c2]/45 hover:bg-[#e8f3fc]"
+                    >
+                      {h.cta.label}
+                    </Link>
+                  )}
+                </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -53,7 +53,7 @@ export function FeedPostCard({
                 <span className="rounded-sm bg-slate-100 px-2 py-0.5 font-medium text-slate-600">
                   {roleLabel[post.author.role] ?? post.author.role}
                 </span>
-                <span className="hidden text-slate-400 sm:inline">· Public to members</span>
+                <span className="hidden text-slate-400 sm:inline">· Aspire members only</span>
               </p>
             </div>
             <div className="flex shrink-0 items-start gap-1">

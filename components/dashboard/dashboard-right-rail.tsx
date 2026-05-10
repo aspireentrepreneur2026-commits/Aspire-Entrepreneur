@@ -58,7 +58,7 @@ export function DashboardRightRail({ members }: { members: DashboardDiscoverMemb
         <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm">
           <h2 className="text-[15px] font-semibold text-slate-900">Trending themes</h2>
           <p className="mt-1 text-xs text-slate-500">
-            Inspired by Instagram/Facebook hashtags — jump to Aspire toolkit sections or start a post.
+            Shortcut tags — jump to toolkit sections below the feed or start a post about a theme.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {trendingTags.map((t) => (
@@ -74,9 +74,10 @@ export function DashboardRightRail({ members }: { members: DashboardDiscoverMemb
         </div>
 
         <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm">
-          <h2 className="text-[15px] font-semibold text-slate-900">Add to your feed</h2>
+          <h2 className="text-[15px] font-semibold text-slate-900">People in your network</h2>
           <p className="mt-1 text-xs text-slate-500">
-            Profiles that completed onboarding — follow-style discovery is coming next.
+            Members who finished onboarding — visible only when you are signed in, not public on the web. Follow buttons
+            are coming next.
           </p>
           <ul className="mt-4 space-y-4">
             {members.slice(0, 8).map((m) => {
@@ -91,7 +92,7 @@ export function DashboardRightRail({ members }: { members: DashboardDiscoverMemb
                       <p className="truncate text-[14px] font-semibold text-slate-900">{m.name}</p>
                       <p className="truncate text-xs text-slate-600">{memberSubtitle(m)}</p>
                       <p className="truncate text-xs text-slate-400">
-                        {[m.location, m.country].filter(Boolean).join(" · ") || "Aspire Entrepreneur"}
+                        {[m.location, m.country].filter(Boolean).join(" · ") || "Aspire member"}
                       </p>
                       <button
                         type="button"
@@ -108,10 +109,10 @@ export function DashboardRightRail({ members }: { members: DashboardDiscoverMemb
             })}
           </ul>
           <Link
-            href="/dashboard#discover"
+            href="/dashboard#network-members"
             className="mt-4 block pt-3 text-center text-sm font-semibold text-slate-600 hover:text-[#0a66c2]"
           >
-            See all suggestions →
+            See all in member network →
           </Link>
         </div>
 

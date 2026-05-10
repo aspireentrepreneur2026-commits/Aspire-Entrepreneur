@@ -7,7 +7,7 @@ const stories = [
   { emoji: "✨", label: "Tip", caption: "Onboarding", href: "/onboarding", ring: "from-violet-500 to-fuchsia-600" },
   { emoji: "💡", label: "Ideas", caption: "Idea hub", href: "/dashboard", hash: "#ideas-hub", ring: "from-amber-400 to-orange-600" },
   { emoji: "🏪", label: "Business", caption: "New ventures", href: "/dashboard", hash: "#new-business-spotlight", ring: "from-emerald-500 to-teal-600" },
-  { emoji: "🎯", label: "Mentors", caption: "Experts", href: "/dashboard", hash: "#discover", ring: "from-sky-500 to-blue-700" },
+  { emoji: "🎯", label: "Mentors", caption: "Experts", href: "/dashboard", hash: "#network-members", ring: "from-sky-500 to-blue-700" },
   { emoji: "📣", label: "Feed", caption: "Community", href: "/dashboard", hash: "#feed-start", ring: "from-rose-500 to-red-600" },
   {
     emoji: "🎥",

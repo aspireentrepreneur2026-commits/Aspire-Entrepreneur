@@ -54,7 +54,7 @@ export default async function ProtectedLayout({
               Business
             </Link>
             <Link
-              href="/dashboard#discover"
+              href="/dashboard#network-members"
               className="hidden rounded-md px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 lg:inline"
             >
               Network

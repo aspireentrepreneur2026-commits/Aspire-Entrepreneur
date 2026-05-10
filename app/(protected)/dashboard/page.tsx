@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   const displayName = session.user.name?.trim() || "Member";
   const initials = displayName.trim().charAt(0).toUpperCase() || "?";
 
-  const [me, feedPosts, publicFeed] = await Promise.all([
+  const [me, feedPosts, memberNetworkRows] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -87,7 +87,7 @@ export default async function DashboardPage() {
       })
     : displayName;
 
-  const discoverForRail: DashboardDiscoverMember[] = publicFeed.map((m) => ({
+  const networkRailSlice: DashboardDiscoverMember[] = memberNetworkRows.map((m) => ({
     id: m.id,
     name: m.name,
     role: m.role,
@@ -161,39 +161,53 @@ export default async function DashboardPage() {
             <DashboardEntrepreneurHub />
           </div>
 
-          <DashboardRightRail members={discoverForRail.filter((x) => x.id !== session.user.id)} />
+          <DashboardRightRail members={networkRailSlice.filter((x) => x.id !== session.user.id)} />
         </div>
 
-        <section id="discover" className="mt-10 scroll-mt-28 border-t border-slate-300/70 pt-10 lg:hidden">
-          <h2 className="text-xl font-semibold text-slate-900">Discover members</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Public-safe snapshots of founders, mentors, and investors on the platform.
-          </p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            {publicFeed.map((member) => (
-              <DiscoverMemberCard key={member.id} member={member} />
-            ))}
-          </div>
-          <Link
-            href={myDashboardPath}
-            className="mt-6 inline-flex rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-[#0a66c2] hover:bg-slate-50"
-          >
-            Open my dashboard →
-          </Link>
-        </section>
-
-        <section id="discover-desktop" className="mt-12 hidden scroll-mt-28 border-t border-slate-300/70 pt-10 lg:block">
-          <div className="rounded-lg border border-slate-200/90 bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-slate-900">Explore all members</h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Full profiles of people who finished onboarding — use this wider layout on small screens from the block
-              above.
-            </p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {publicFeed.map((member) => (
-                <DiscoverMemberCard key={member.id} member={member} />
-              ))}
+        <section
+          id="network-members"
+          className="scroll-mt-[5.75rem]"
+          aria-labelledby="network-members-heading"
+        >
+          <div className="mt-10 border-t border-slate-300/70 pt-10 lg:mt-12 lg:pt-12">
+            <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm sm:flex-row sm:items-start sm:justify-between lg:p-8">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a66c2]/10 text-lg" aria-hidden>
+                    👥
+                  </span>
+                  <h2 id="network-members-heading" className="text-xl font-semibold tracking-tight text-slate-900">
+                    Member network
+                  </h2>
+                </div>
+                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600">
+                  Connect with founders, mentors, and investors who completed onboarding — only visible when you&apos;re
+                  signed in to Aspire. These profiles aren&apos;t indexed for anonymous public browsing.
+                </p>
+              </div>
+              <Link
+                href={myDashboardPath}
+                className="inline-flex shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-[#0a66c2] hover:border-[#0a66c2]/30 hover:bg-[#e8f3fc]"
+              >
+                My workspace →
+              </Link>
             </div>
+
+            {memberNetworkRows.length === 0 ? (
+              <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-14 text-center">
+                <p className="text-sm font-semibold text-slate-800">Your member network will grow here</p>
+                <p className="mt-2 text-sm text-slate-600">
+                  When people finish onboarding they appear automatically — invites stay inside Aspire, not on the open
+                  web.
+                </p>
+              </div>
+            ) : (
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {memberNetworkRows.map((member) => (
+                  <DiscoverMemberCard key={member.id} member={member} />
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </main>

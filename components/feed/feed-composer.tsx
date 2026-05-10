@@ -7,7 +7,14 @@ import { inferFeedAttachmentKind } from "@/lib/feed-attachment";
 
 const initial: FeedActionState | undefined = undefined;
 
-type UploadCaps = { blob: boolean; multipartMaxMb: number; mode: "blob" | "multipart" };
+type UploadCaps = {
+  blob: boolean;
+  multipartMaxMb: number;
+  mode: "blob" | "multipart" | "disabled";
+  deviceUploadsEnabled?: boolean;
+  disabledReason?: string;
+  hint?: string;
+};
 
 type Chip = {
   id: string;
@@ -44,10 +51,30 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch("/api/feed/upload-capabilities")
-      .then((r) => r.json())
-      .then((d: UploadCaps) => setCaps(d))
-      .catch(() => setCaps({ blob: false, multipartMaxMb: 4, mode: "multipart" }));
+    let cancelled = false;
+    fetch("/api/feed/upload-capabilities", { cache: "no-store" })
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json() as Promise<UploadCaps>;
+      })
+      .then((d) => {
+        if (!cancelled) setCaps(d);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCaps({
+            blob: false,
+            multipartMaxMb: 0,
+            mode: "disabled",
+            deviceUploadsEnabled: false,
+            disabledReason:
+              "Could not load upload settings — refresh the page. On Vercel, add BLOB_READ_WRITE_TOKEN to this project’s Environment Variables, then Redeploy (variables apply only after a new deployment).",
+          });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -97,9 +124,21 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
 
   const handleDeviceFile = async (file: File, kind: "IMAGE" | "VIDEO") => {
     setClientMsg(null);
-    const maxMb = caps?.multipartMaxMb ?? 80;
+    if (caps == null) {
+      setClientMsg("Upload setup is still loading — wait a second and try again.");
+      return;
+    }
+    if (caps.mode === "disabled") {
+      setClientMsg(
+        caps.disabledReason ??
+          "Device uploads are turned off in this environment. Add BLOB_READ_WRITE_TOKEN or use Link / URL.",
+      );
+      return;
+    }
 
-    if (caps?.mode === "blob") {
+    const maxMb = caps.multipartMaxMb || 80;
+
+    if (caps.mode === "blob") {
       setUploading(true);
       try {
         const safeName = file.name.replace(/[^\w.\-()+ ]/g, "_");
@@ -117,9 +156,9 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
       return;
     }
 
-    if (file.size > maxMb * 1024 * 1024) {
+    if (maxMb > 0 && file.size > maxMb * 1024 * 1024) {
       setClientMsg(
-        `File too large for this setup (max ${maxMb}MB). Add Vercel Blob (BLOB_READ_WRITE_TOKEN) for larger uploads.`,
+        `File too large for this setup (max ${maxMb}MB). Deploy with BLOB_READ_WRITE_TOKEN for Blob uploads, or compress the file.`,
       );
       return;
     }
@@ -128,10 +167,25 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
     try {
       const fd = new FormData();
       fd.append("file", file);
-      const res = await fetch("/api/feed/upload-local", { method: "POST", body: fd });
-      const data = (await res.json()) as { url?: string; error?: string };
+      const res = await fetch("/api/feed/upload-local", {
+        method: "POST",
+        body: fd,
+        credentials: "same-origin",
+      });
+      const raw = await res.text();
+      let data: { url?: string; error?: string } = {};
+      try {
+        data = JSON.parse(raw) as { url?: string; error?: string };
+      } catch {
+        setClientMsg(
+          res.ok
+            ? "Upload failed: unexpected response from server."
+            : `Upload failed (${res.status}). ${raw.slice(0, 160)}`,
+        );
+        return;
+      }
       if (!res.ok) {
-        setClientMsg(data.error ?? "Upload failed.");
+        setClientMsg(data.error ?? `Upload failed (${res.status}).`);
         return;
       }
       if (data.url) {
@@ -139,7 +193,7 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
         setClientMsg("File attached.");
       }
     } catch {
-      setClientMsg("Upload failed.");
+      setClientMsg("Upload failed — network error. Check your connection and try again.");
     } finally {
       setUploading(false);
     }
@@ -210,12 +264,29 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
         <div className="min-w-0 flex-1">
           <p className="text-[15px] font-semibold leading-tight text-slate-900">Start a post</p>
           <p className="mt-0.5 text-xs text-slate-500">
-            Post as <span className="font-medium text-slate-700">{publisherName}</span> · Visible to members
+            Post as <span className="font-medium text-slate-700">{publisherName}</span> · Aspire member network only —
+            not shown on public web search
           </p>
         </div>
       </div>
 
       <div className="space-y-3 px-4 pt-4">
+        {caps == null ? (
+          <p className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+            Checking upload setup for this environment…
+          </p>
+        ) : null}
+
+        {caps?.mode === "disabled" && caps.disabledReason ? (
+          <div
+            className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-950"
+            role="status"
+          >
+            <span className="font-semibold text-amber-900">Device uploads unavailable: </span>
+            {caps.disabledReason}
+          </div>
+        ) : null}
+
         {state?.error ? <p className="text-sm text-red-600">{state.error}</p> : null}
         {state?.success ? <p className="text-sm text-green-700">{state.success}</p> : null}
         {clientMsg ? <p className="text-sm text-[#0a66c2]">{clientMsg}</p> : null}
@@ -341,11 +412,15 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
       <p className="px-4 pb-2 text-[11px] text-slate-500">
         <strong className="font-medium text-slate-600">+</strong> Add photos, videos, or links · Emoji & https links
         supported
-        {caps?.blob
-          ? " · Large files use Vercel Blob."
-          : caps
-            ? ` · Max ~${caps.multipartMaxMb}MB per upload here.`
-            : null}
+        {caps == null
+          ? " · Checking whether to use Vercel Blob or local disk…"
+          : caps.mode === "disabled"
+            ? " · Use Link / URL for media until Blob is configured (see alert above)."
+            : caps.mode === "blob"
+              ? " · Large uploads use Vercel Blob (no small server cap)."
+              : caps.multipartMaxMb
+                ? ` · Max ~${caps.multipartMaxMb}MB per file on this server.`
+                : null}
       </p>
 
       <div className="relative z-20 flex flex-wrap items-center justify-between gap-3 overflow-visible border-t border-slate-100 bg-slate-50/70 px-4 py-3">
@@ -390,7 +465,17 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
             <div className="absolute bottom-full left-0 z-[100] mb-2 w-60 rounded-xl border border-slate-200 bg-white py-1 text-sm shadow-xl">
               <button
                 type="button"
-                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-slate-800 hover:bg-slate-50"
+                disabled={
+                  busy || caps == null || caps.mode === "disabled" || caps.deviceUploadsEnabled === false
+                }
+                title={
+                  caps == null
+                    ? "Loading upload settings…"
+                    : caps.mode === "disabled"
+                      ? caps.disabledReason
+                      : undefined
+                }
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50/80 disabled:text-slate-400"
                 onClick={() => {
                   setMenuOpen(false);
                   imageInputRef.current?.click();
@@ -400,7 +485,17 @@ export function FeedComposer({ publisherName = "You" }: { publisherName?: string
               </button>
               <button
                 type="button"
-                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-slate-800 hover:bg-slate-50"
+                disabled={
+                  busy || caps == null || caps.mode === "disabled" || caps.deviceUploadsEnabled === false
+                }
+                title={
+                  caps == null
+                    ? "Loading upload settings…"
+                    : caps.mode === "disabled"
+                      ? caps.disabledReason
+                      : undefined
+                }
+                className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-50/80 disabled:text-slate-400"
                 onClick={() => {
                   setMenuOpen(false);
                   videoInputRef.current?.click();

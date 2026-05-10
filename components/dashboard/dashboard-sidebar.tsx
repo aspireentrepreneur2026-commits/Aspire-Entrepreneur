@@ -63,7 +63,7 @@ export function DashboardSidebar({
         <nav className="overflow-hidden rounded-lg border border-slate-200/80 bg-white py-2 text-sm shadow-sm">
           <p className="px-4 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Shortcuts</p>
           <NavRow href="/dashboard#feed-start" icon={<NavIcon>🏠</NavIcon>} label="Home feed" />
-          <NavRow href="/dashboard#discover" icon={<NavIcon>👥</NavIcon>} label="Discover people" />
+          <NavRow href="/dashboard#network-members" icon={<NavIcon>👥</NavIcon>} label="Member network" />
           <NavRow href={myDashboardHref} icon={<NavIcon>📊</NavIcon>} label="My dashboard" />
           <NavRow href="/settings" icon={<NavIcon>⚙️</NavIcon>} label="Settings" />
           {isAdmin ? (
