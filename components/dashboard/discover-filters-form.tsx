@@ -6,7 +6,7 @@ const ENTITY_TYPES = [
   { id: "founders", label: "Founders" },
   { id: "mentors", label: "Mentors" },
   { id: "investors", label: "Investors" },
-  { id: "startups", label: "Startups & companies" },
+  { id: "startups", label: "Business & companies" },
   { id: "ideas", label: "Ideas & posts" },
 ] as const;
 

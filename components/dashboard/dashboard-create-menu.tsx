@@ -25,7 +25,7 @@ const items = [
     label: "New business story",
     sub: "Launch, SMB, side project",
     emoji: "🚀",
-    href: "/dashboard/startups#new-business-spotlight",
+    href: "/dashboard/ideas#new-business-spotlight",
     soon: false,
   },
   {
@@ -45,11 +45,11 @@ const items = [
     soon: true,
   },
   {
-    key: "startup",
-    label: "Startup listing",
-    sub: "Showcase your startup",
+    key: "business-listing",
+    label: "Business listing",
+    sub: "Showcase your business",
     emoji: "💼",
-    href: "/dashboard/startups#startups",
+    href: "/dashboard/ideas#business",
     soon: false,
   },
   {
@@ -81,7 +81,7 @@ const items = [
     label: "Raise / campaign update",
     sub: "Round, grant, crowdfunding note",
     emoji: "🎯",
-    href: "/dashboard/startups#funding-desk",
+    href: "/dashboard/ideas#funding-desk",
     soon: false,
   },
   {
@@ -128,11 +128,11 @@ export function DashboardCreateMenu({ workspaceHref }: { workspaceHref: string }
     try {
       const u = new URL(href, typeof window !== "undefined" ? window.location.origin : "http://localhost");
       const hash = u.hash;
-      if (u.pathname === "/dashboard" && hash) {
+      if ((u.pathname === "/dashboard" || u.pathname === "/dashboard/ideas") && hash) {
         requestAnimationFrame(() => {
           const target = document.querySelector(hash);
           target?.scrollIntoView({ behavior: "smooth", block: "start" });
-          if (key === "post") {
+          if (u.pathname === "/dashboard" && key === "post") {
             setTimeout(() => {
               (document.querySelector(`${hash} textarea[name="body"]`) as HTMLTextAreaElement | null)?.focus();
             }, 380);

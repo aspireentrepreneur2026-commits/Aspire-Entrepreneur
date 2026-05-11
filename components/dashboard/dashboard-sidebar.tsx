@@ -63,7 +63,7 @@ export function DashboardSidebar({
         <nav className="overflow-hidden rounded-lg border border-slate-200/80 bg-white py-2 text-sm shadow-sm">
           <p className="px-4 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Shortcuts</p>
           <NavRow href="/dashboard#feed-start" icon={<NavIcon>🏠</NavIcon>} label="Home feed" />
-          <NavRow href="/dashboard#network-members" icon={<NavIcon>👥</NavIcon>} label="Member network" />
+          <NavRow href="/dashboard/network" icon={<NavIcon>👥</NavIcon>} label="Member network" />
           <NavRow href="/members/me" icon={<NavIcon>🪪</NavIcon>} label="My profile" />
           <NavRow href={myDashboardHref} icon={<NavIcon>📊</NavIcon>} label="My dashboard" />
           <NavRow href="/settings" icon={<NavIcon>⚙️</NavIcon>} label="Settings" />
@@ -77,53 +77,19 @@ export function DashboardSidebar({
           </p>
           <NavRow href="/dashboard/discover" icon={<NavIcon>🔍</NavIcon>} label="Discover" />
           <NavRow href="/dashboard/ideas" icon={<NavIcon>💡</NavIcon>} label="Ideas workspace" />
-          <NavRow href="/dashboard/startups" icon={<NavIcon>💼</NavIcon>} label="Startups workspace" />
-          <NavRow href="/dashboard/startups#new-business-spotlight" icon={<NavIcon>🏪</NavIcon>} label="New business" />
-          <NavRow href="/dashboard/startups#funding-desk" icon={<NavIcon>💰</NavIcon>} label="Funding desk" />
-          <NavRow href="/dashboard/startups#mentorship-lab" icon={<NavIcon>🎓</NavIcon>} label="Mentorship" />
-          <NavRow href="/dashboard#learning-grow" icon={<NavIcon>📚</NavIcon>} label="Learning & playbooks" />
+          <NavRow href="/dashboard/business" icon={<NavIcon>💼</NavIcon>} label="Business workspace" />
+          <NavRow href="/dashboard/ideas#new-business-spotlight" icon={<NavIcon>🏪</NavIcon>} label="New business" />
+          <NavRow href="/dashboard/ideas#funding-desk" icon={<NavIcon>💰</NavIcon>} label="Funding desk" />
+          <NavRow href="/dashboard/ideas#mentorship-lab" icon={<NavIcon>🎓</NavIcon>} label="Mentorship" />
+          <NavRow href="/dashboard/ideas#learning-grow" icon={<NavIcon>📚</NavIcon>} label="Learning & playbooks" />
           <NavRow href="/onboarding" icon={<NavIcon>✨</NavIcon>} label="Profile wizard" />
-
-          <div className="mx-4 my-2 border-t border-dashed border-slate-100" />
-          <p className="px-4 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Social (soon)</p>
-          <NavRow href="#" icon={<NavIcon>💬</NavIcon>} label="Messages" soon />
-          <NavRow href="#" icon={<NavIcon>🔔</NavIcon>} label="Notifications" soon />
-          <NavRow href="#" icon={<NavIcon>🔖</NavIcon>} label="Saved" soon />
-          <NavRow href="#" icon={<NavIcon>📅</NavIcon>} label="Events & live" soon />
-          <NavRow href="#" icon={<NavIcon>👯</NavIcon>} label="Groups & circles" soon />
-          <NavRow href="#" icon={<NavIcon>🎬</NavIcon>} label="Reels & video" soon />
-          <NavRow href="#" icon={<NavIcon>🛒</NavIcon>} label="Marketplace" soon />
         </nav>
       </div>
     </aside>
   );
 }
 
-function NavRow({
-  href,
-  icon,
-  label,
-  soon,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  label: string;
-  soon?: boolean;
-}) {
-  if (soon) {
-    return (
-      <button
-        type="button"
-        disabled
-        title="Coming soon"
-        className="flex w-full cursor-not-allowed items-center gap-3 px-4 py-2.5 text-left text-slate-400"
-      >
-        <span className="w-6 text-center opacity-70">{icon}</span>
-        <span className="flex-1 font-medium">{label}</span>
-        <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500">Soon</span>
-      </button>
-    );
-  }
+function NavRow({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
   return (
     <Link
       href={href}

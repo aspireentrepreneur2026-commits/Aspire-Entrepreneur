@@ -124,7 +124,7 @@ export default async function DiscoverPage({
                 <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-slate-600">
                   Fill the row above (scroll horizontally on small screens) or pick a <strong className="text-slate-800">Show me</strong>{" "}
                   filter, then <strong className="text-slate-800">Search</strong>. The first box matches <strong className="text-slate-800">name</strong>,{" "}
-                  <strong className="text-slate-800">email</strong>, or <strong className="text-slate-800">phone</strong>. Company matches startup or investor firm;
+                  <strong className="text-slate-800">email</strong>, or <strong className="text-slate-800">phone</strong>. Company matches founder business name or investor firm;
                   investment range matches founder funding text or investor cheque range; team size matches founder team size.
                 </p>
               </div>

@@ -1,12 +1,10 @@
 import Link from "next/link";
-import { DashboardEntrepreneurHub } from "@/components/dashboard/dashboard-entrepreneur-hub";
 import { DashboardRightRail } from "@/components/dashboard/dashboard-right-rail";
 import type { DashboardDiscoverMember } from "@/components/dashboard/dashboard-right-rail";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardStoriesStrip } from "@/components/dashboard/dashboard-stories-strip";
 import { FeedComposer } from "@/components/feed/feed-composer";
 import { FeedPostCard } from "@/components/feed/feed-post-card";
-import { ProfileAvatarImg } from "@/components/profile/profile-image-display";
 import { getRoleDashboardPath } from "@/lib/auth-redirect";
 import { feedAuthorSubtitle } from "@/lib/feed-display-name";
 import { feedPostInclude, toFeedPostView } from "@/lib/feed-serialize";
@@ -169,8 +167,6 @@ export default async function DashboardPage() {
                 ))}
               </div>
             )}
-
-            <DashboardEntrepreneurHub />
           </div>
 
           <DashboardRightRail
@@ -178,53 +174,6 @@ export default async function DashboardPage() {
             followingIds={followingIds}
           />
         </div>
-
-        <section
-          id="network-members"
-          className="scroll-mt-[5.75rem]"
-          aria-labelledby="network-members-heading"
-        >
-          <div className="mt-10 border-t border-slate-300/70 pt-10 lg:mt-12 lg:pt-12">
-            <div className="flex flex-col gap-4 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm sm:flex-row sm:items-start sm:justify-between lg:p-8">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0a66c2]/10 text-lg" aria-hidden>
-                    👥
-                  </span>
-                  <h2 id="network-members-heading" className="text-xl font-semibold tracking-tight text-slate-900">
-                    Member network
-                  </h2>
-                </div>
-                <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-600">
-                  Connect with founders, mentors, and investors who completed onboarding — only visible when you&apos;re
-                  signed in to Aspire. These profiles aren&apos;t indexed for anonymous public browsing.
-                </p>
-              </div>
-              <Link
-                href={myDashboardPath}
-                className="inline-flex shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-[#0a66c2] hover:border-[#0a66c2]/30 hover:bg-[#e8f3fc]"
-              >
-                My workspace →
-              </Link>
-            </div>
-
-            {memberNetworkRows.length === 0 ? (
-              <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-slate-50/80 px-6 py-14 text-center">
-                <p className="text-sm font-semibold text-slate-800">Your member network will grow here</p>
-                <p className="mt-2 text-sm text-slate-600">
-                  When people finish onboarding they appear automatically — invites stay inside Aspire, not on the open
-                  web.
-                </p>
-              </div>
-            ) : (
-              <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {memberNetworkRows.map((member) => (
-                  <DiscoverMemberCard key={member.id} member={member} />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
       </main>
     </div>
   );
@@ -239,113 +188,5 @@ function Shortcut({ href, emoji, label }: { href: string; emoji: string; label: 
       <span aria-hidden>{emoji}</span>
       {label}
     </Link>
-  );
-}
-
-/** Single member card for Discover section */
-function DiscoverMemberCard({
-  member,
-}: {
-  member: {
-    id: string;
-    name: string;
-    role: string;
-    image: string | null;
-    profileApprovalStatus: string;
-    country: string | null;
-    location: string | null;
-    primaryGoal: string | null;
-    joinAim: string | null;
-    experienceLevel: string | null;
-    createdAt: Date;
-    founderProfile: {
-      startupName: string;
-      stage: string;
-      industry: string;
-      fundingNeeded: string | null;
-    } | null;
-    mentorProfile: {
-      domainExpertise: string;
-      yearsExperience: number;
-      availability: string | null;
-    } | null;
-    investorProfile: {
-      firmName: string;
-      checkSizeRange: string;
-      investmentStage: string;
-      sectorsOfInterest: string;
-    } | null;
-  };
-}) {
-  const initial = member.name.trim().charAt(0).toUpperCase() || "?";
-  return (
-    <article className="overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-sm transition hover:border-[#0a66c2]/30 hover:shadow-md">
-      <Link href={`/members/${member.id}`} className="block p-4 transition hover:bg-slate-50/80">
-        <div className="flex gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-slate-600 to-slate-800 text-lg font-semibold text-white">
-            <ProfileAvatarImg
-              url={member.image}
-              initial={initial}
-              imgClassName="h-full w-full object-cover"
-              fallbackClassName="text-lg font-semibold"
-            />
-          </div>
-          <div className="min-w-0">
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-[#0a66c2]">
-              {member.role}
-            </span>
-            <h3 className="text-base font-semibold text-slate-900">{member.name}</h3>
-            <p className="truncate text-xs text-slate-500">
-              {member.location ?? "Location hidden"}
-              {member.country ? ` · ${member.country}` : ""}
-            </p>
-            {member.profileApprovalStatus !== "APPROVED" ? (
-              <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-amber-700">
-                Profile: {member.profileApprovalStatus.toLowerCase()}
-              </p>
-            ) : null}
-          </div>
-        </div>
-      </Link>
-      <div className="border-t border-slate-100 px-4 py-3 text-sm text-slate-700">
-        <p className="line-clamp-2">
-          <span className="font-semibold text-slate-900">Goal: </span>
-          {member.primaryGoal ?? "—"}
-        </p>
-      </div>
-      <div className="border-t border-slate-100 bg-slate-50/70 px-4 py-4 text-xs text-slate-600">
-        <p className="line-clamp-2">
-          <span className="font-semibold text-slate-900">Joined because: </span>
-          {member.joinAim ?? "—"}
-        </p>
-
-        {member.founderProfile ? (
-          <div className="mt-3 rounded-md border border-sky-100 bg-sky-50/80 p-2 text-[11px]">
-            <p className="font-semibold text-sky-950">Startup</p>
-            <p>{member.founderProfile.startupName}</p>
-            <p className="text-slate-600">
-              {member.founderProfile.stage} · {member.founderProfile.industry}
-            </p>
-          </div>
-        ) : null}
-
-        {member.mentorProfile ? (
-          <div className="mt-3 rounded-md border border-violet-100 bg-violet-50/80 p-2 text-[11px]">
-            <p className="font-semibold text-violet-950">Mentor</p>
-            <p>{member.mentorProfile.domainExpertise}</p>
-          </div>
-        ) : null}
-
-        {member.investorProfile ? (
-          <div className="mt-3 rounded-md border border-fuchsia-100 bg-fuchsia-50/80 p-2 text-[11px]">
-            <p className="font-semibold text-fuchsia-950">Investor</p>
-            <p>{member.investorProfile.firmName}</p>
-          </div>
-        ) : null}
-      </div>
-      <p className="px-4 pb-3 text-[10px] uppercase tracking-wide text-slate-400">
-        Joined {new Date(member.createdAt).toLocaleDateString()}
-      </p>
-    </article>
   );
 }

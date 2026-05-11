@@ -254,7 +254,7 @@ export default async function MemberProfilePage({ params }: Readonly<{ params: P
 
               {user.role === "FOUNDER" && user.founderProfile ? (
                 <section>
-                  <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Startup snapshot</h2>
+                  <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Business snapshot</h2>
                   <p className="mt-2 text-sm text-slate-800">
                     <span className="font-medium">{user.founderProfile.startupName}</span> ·{" "}
                     {user.founderProfile.stage} · {user.founderProfile.industry}

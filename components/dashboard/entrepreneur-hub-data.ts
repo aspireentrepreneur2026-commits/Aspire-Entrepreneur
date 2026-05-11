@@ -14,7 +14,7 @@ export type HubEntry = {
   };
 };
 
-/** Ideas & validation — lives on `/dashboard/ideas` and the Ideas tab on the home toolkit. */
+/** Ideas & validation — lives on `/dashboard/ideas`. */
 export const IDEAS_HUB_ENTRIES: HubEntry[] = [
   {
     id: "ideas-hub",
@@ -37,7 +37,7 @@ export const IDEAS_HUB_ENTRIES: HubEntry[] = [
     blurb:
       "Curated entrepreneurship micro-lessons are coming soon — meanwhile, learn from the feed and structured profiles in your member network.",
     bullets: ["GTM teardowns • soon", "Legal & finance primer • soon", "Weekly founder AMA • soon"],
-    cta: { label: "Open member network →", hash: "#network-members" },
+    cta: { label: "Open member network →", href: "/dashboard/network" },
     accent: {
       gradient: "from-rose-50 to-orange-50/30",
       bar: "bg-gradient-to-b from-rose-400 to-orange-500",
@@ -46,8 +46,8 @@ export const IDEAS_HUB_ENTRIES: HubEntry[] = [
   },
 ];
 
-/** Former “Business” toolkit cards — lives on `/dashboard/startups`. */
-export const STARTUPS_TOOLKIT_ENTRIES: HubEntry[] = [
+/** Founder & SME toolkit cards — rendered on `/dashboard/ideas`. */
+export const FOUNDER_SME_TOOLKIT_ENTRIES: HubEntry[] = [
   {
     id: "new-business-spotlight",
     icon: "🏪",
@@ -82,7 +82,7 @@ export const STARTUPS_TOOLKIT_ENTRIES: HubEntry[] = [
     blurb:
       "Office hours-style help from mentors — structured programs and peer groups arrive in a future release.",
     bullets: ["Mentor dashboards live", "Group sessions • soon", "Accountability buddies • soon"],
-    cta: { label: "Browse member network →", hash: "#network-members" },
+    cta: { label: "Browse member network →", href: "/dashboard/network" },
     accent: {
       gradient: "from-sky-50 to-blue-50/40",
       bar: "bg-gradient-to-b from-sky-400 to-[#0a66c2]",
@@ -90,12 +90,12 @@ export const STARTUPS_TOOLKIT_ENTRIES: HubEntry[] = [
     },
   },
   {
-    id: "startups",
+    id: "business",
     icon: "💼",
-    title: "Startups",
-    blurb: "Surface your startup and team growth — discovery, matching, and apply-in-app flows are planned next.",
-    bullets: ["Early-stage startup profiles", "Growth & fundraising milestones", "Remote-friendly tags • soon"],
-    cta: { label: "Highlight your startup in the feed →", hash: "#feed-start" },
+    title: "Business",
+    blurb: "Surface your business and team growth — discovery, matching, and apply-in-app flows are planned next.",
+    bullets: ["Early-stage business profiles", "Growth & fundraising milestones", "Remote-friendly tags • soon"],
+    cta: { label: "Highlight your business in the feed →", hash: "#feed-start" },
     accent: {
       gradient: "from-slate-50 to-indigo-50/45",
       bar: "bg-gradient-to-b from-indigo-400 to-slate-700",
@@ -106,6 +106,5 @@ export const STARTUPS_TOOLKIT_ENTRIES: HubEntry[] = [
 
 export const IDEAS_HUB_IDS = Object.fromEntries(IDEAS_HUB_ENTRIES.map((h) => [h.id, true])) as Record<string, boolean>;
 
-export const STARTUPS_TOOLKIT_IDS = Object.fromEntries(
-  STARTUPS_TOOLKIT_ENTRIES.map((h) => [h.id, true]),
-) as Record<string, boolean>;
+/** @deprecated use FOUNDER_SME_TOOLKIT_ENTRIES */
+export const STARTUPS_TOOLKIT_ENTRIES = FOUNDER_SME_TOOLKIT_ENTRIES;

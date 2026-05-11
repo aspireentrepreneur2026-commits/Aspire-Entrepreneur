@@ -24,12 +24,12 @@ export default async function ProtectedLayout({
           <Link
             href="/dashboard/discover"
             className="relative hidden min-w-0 max-w-md flex-1 items-center rounded-md border border-slate-200 bg-slate-50 py-2 pl-10 pr-3 text-left text-sm text-slate-500 shadow-sm transition hover:border-[#0a66c2]/40 hover:bg-white hover:text-slate-700 md:flex"
-            aria-label="Open discover search — people, startups, mentors, ideas"
+            aria-label="Open discover search — people, businesses, mentors, ideas"
           >
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden>
               🔍
             </span>
-            <span className="truncate">Search people, startups, mentors, ideas…</span>
+            <span className="truncate">Search people, businesses, mentors, ideas…</span>
           </Link>
 
           <nav className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
@@ -54,50 +54,18 @@ export default async function ProtectedLayout({
               Discover
             </Link>
             <Link
-              href="/dashboard#network-members"
+              href="/dashboard/network"
               className="hidden rounded-md px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 lg:inline"
             >
               Network
             </Link>
             <Link
-              href="/dashboard/startups"
+              href="/dashboard/business"
               className="hidden rounded-md px-2 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 xl:inline"
-              title="Startups workspace"
+              title="Business workspace"
             >
-              Startups
+              Business
             </Link>
-            <button
-              type="button"
-              disabled
-              title="Video hub — coming soon"
-              className="hidden cursor-not-allowed rounded-md px-2 py-2 text-sm text-slate-400 xl:inline"
-            >
-              🎬 <span className="sr-only">Videos</span>
-            </button>
-            <button
-              type="button"
-              disabled
-              title="Marketplace for founders — coming soon"
-              className="hidden cursor-not-allowed rounded-md px-2 py-2 text-sm text-slate-400 2xl:inline"
-            >
-              🛒 <span className="sr-only">Marketplace</span>
-            </button>
-            <button
-              type="button"
-              disabled
-              title="Messaging — coming soon"
-              className="hidden cursor-not-allowed rounded-md px-2 py-2 text-sm text-slate-400 xl:inline"
-            >
-              💬
-            </button>
-            <button
-              type="button"
-              disabled
-              title="Notifications — coming soon"
-              className="relative hidden cursor-not-allowed rounded-md px-2 py-2 text-sm text-slate-400 xl:inline"
-            >
-              🔔
-            </button>
             <Link
               href="/settings"
               className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-slate-600 to-slate-800 text-sm font-bold text-white hover:ring-2 hover:ring-[#0a66c2]/40"

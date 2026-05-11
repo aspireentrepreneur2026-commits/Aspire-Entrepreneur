@@ -20,7 +20,7 @@ export function DiscoverMemberResults({ members }: { members: DiscoverMember[] }
           Try broader keywords, set type to &quot;All&quot;, or clear location — only people who finished onboarding
           appear here.
         </p>
-        <Link href="/dashboard#network-members" className="mt-4 inline-block text-sm font-semibold text-[#0a66c2] hover:underline">
+        <Link href="/dashboard/network" className="mt-4 inline-block text-sm font-semibold text-[#0a66c2] hover:underline">
           Browse full member network →
         </Link>
       </div>
@@ -57,7 +57,7 @@ export function DiscoverMemberResults({ members }: { members: DiscoverMember[] }
               <Row label="Join aim" value={m.joinAim ?? undefined} />
               {m.founderProfile ? (
                 <>
-                  <Row label="Startup" value={m.founderProfile.startupName} />
+                  <Row label="Business" value={m.founderProfile.startupName} />
                   <Row label="Stage" value={m.founderProfile.stage} />
                   <Row label="Industry" value={m.founderProfile.industry} />
                   <Row label="Funding" value={m.founderProfile.fundingNeeded ?? undefined} />

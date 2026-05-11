@@ -35,10 +35,10 @@ const founderPrompts = [
 
 const trendingTags = [
   { label: "#idea", href: "/dashboard/ideas" },
-  { label: "#newbusiness", href: "/dashboard/startups#new-business-spotlight" },
-  { label: "#startups", href: "/dashboard/startups" },
-  { label: "#mentorwanted", href: "/dashboard/startups#mentorship-lab" },
-  { label: "#funding", href: "/dashboard/startups#funding-desk" },
+  { label: "#newbusiness", href: "/dashboard/ideas#new-business-spotlight" },
+  { label: "#business", href: "/dashboard/ideas#business" },
+  { label: "#mentorwanted", href: "/dashboard/ideas#mentorship-lab" },
+  { label: "#funding", href: "/dashboard/ideas#funding-desk" },
   { label: "#buildinpublic", href: "/dashboard#feed-start" },
 ];
 
@@ -68,7 +68,7 @@ export function DashboardRightRail({
         <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm">
           <h2 className="text-[15px] font-semibold text-slate-900">Trending themes</h2>
           <p className="mt-1 text-xs text-slate-500">
-            Shortcut tags — jump to toolkit sections below the feed or start a post about a theme.
+            Shortcut tags — jump to the ideas workspace or start a post about a theme.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {trendingTags.map((t) => (
@@ -131,7 +131,7 @@ export function DashboardRightRail({
             })}
           </ul>
           <Link
-            href="/dashboard#network-members"
+            href="/dashboard/network"
             className="mt-4 block pt-3 text-center text-sm font-semibold text-slate-600 hover:text-[#0a66c2]"
           >
             See all in member network →
