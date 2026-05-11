@@ -30,6 +30,7 @@ export async function saveProfileMediaAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
+  const { profileImageUrl, coverImageUrl } = parsed.data;
   const profileNorm = profileImageUrl ? publicUserMediaUrl(profileImageUrl) : undefined;
   const coverNorm = coverImageUrl ? publicUserMediaUrl(coverImageUrl) : undefined;
 
