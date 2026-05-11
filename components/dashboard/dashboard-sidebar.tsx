@@ -73,17 +73,14 @@ export function DashboardSidebar({
 
           <div className="mx-4 my-2 border-t border-dashed border-slate-100" />
           <p className="px-4 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-            Ideas & business
+            Discover &amp; workspaces
           </p>
-          <NavRow href="/dashboard#ideas-hub" icon={<NavIcon>💡</NavIcon>} label="Ideas hub" />
-          <NavRow
-            href="/dashboard#new-business-spotlight"
-            icon={<NavIcon>🏪</NavIcon>}
-            label="New business spotlight"
-          />
-          <NavRow href="/dashboard#funding-desk" icon={<NavIcon>💰</NavIcon>} label="Funding desk" />
-          <NavRow href="/dashboard#mentorship-lab" icon={<NavIcon>🎓</NavIcon>} label="Mentorship" />
-          <NavRow href="/dashboard#startups" icon={<NavIcon>💼</NavIcon>} label="Startups" />
+          <NavRow href="/dashboard/discover" icon={<NavIcon>🔍</NavIcon>} label="Discover" />
+          <NavRow href="/dashboard/ideas" icon={<NavIcon>💡</NavIcon>} label="Ideas workspace" />
+          <NavRow href="/dashboard/startups" icon={<NavIcon>💼</NavIcon>} label="Startups workspace" />
+          <NavRow href="/dashboard/startups#new-business-spotlight" icon={<NavIcon>🏪</NavIcon>} label="New business" />
+          <NavRow href="/dashboard/startups#funding-desk" icon={<NavIcon>💰</NavIcon>} label="Funding desk" />
+          <NavRow href="/dashboard/startups#mentorship-lab" icon={<NavIcon>🎓</NavIcon>} label="Mentorship" />
           <NavRow href="/dashboard#learning-grow" icon={<NavIcon>📚</NavIcon>} label="Learning & playbooks" />
           <NavRow href="/onboarding" icon={<NavIcon>✨</NavIcon>} label="Profile wizard" />
 

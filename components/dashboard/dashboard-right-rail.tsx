@@ -34,11 +34,11 @@ const founderPrompts = [
 ];
 
 const trendingTags = [
-  { label: "#idea", href: "/dashboard#ideas-hub" },
-  { label: "#newbusiness", href: "/dashboard#new-business-spotlight" },
-  { label: "#startups", href: "/dashboard#startups" },
-  { label: "#mentorwanted", href: "/dashboard#mentorship-lab" },
-  { label: "#funding", href: "/dashboard#funding-desk" },
+  { label: "#idea", href: "/dashboard/ideas" },
+  { label: "#newbusiness", href: "/dashboard/startups#new-business-spotlight" },
+  { label: "#startups", href: "/dashboard/startups" },
+  { label: "#mentorwanted", href: "/dashboard/startups#mentorship-lab" },
+  { label: "#funding", href: "/dashboard/startups#funding-desk" },
   { label: "#buildinpublic", href: "/dashboard#feed-start" },
 ];
 

@@ -9,7 +9,7 @@ const items = [
     label: "Post to feed",
     sub: "Update, milestone, question",
     emoji: "✍️",
-    href: "#feed-start",
+    href: "/dashboard#feed-start",
     soon: false,
   },
   {
@@ -17,7 +17,7 @@ const items = [
     label: "Idea spotlight",
     sub: "Share a problem / concept",
     emoji: "💡",
-    href: "#ideas-hub",
+    href: "/dashboard/ideas#ideas-hub",
     soon: false,
   },
   {
@@ -25,7 +25,7 @@ const items = [
     label: "New business story",
     sub: "Launch, SMB, side project",
     emoji: "🚀",
-    href: "#new-business-spotlight",
+    href: "/dashboard/startups#new-business-spotlight",
     soon: false,
   },
   {
@@ -49,7 +49,7 @@ const items = [
     label: "Startup listing",
     sub: "Showcase your startup",
     emoji: "💼",
-    href: "#startups",
+    href: "/dashboard/startups#startups",
     soon: false,
   },
   {
@@ -81,7 +81,7 @@ const items = [
     label: "Raise / campaign update",
     sub: "Round, grant, crowdfunding note",
     emoji: "🎯",
-    href: "#funding-desk",
+    href: "/dashboard/startups#funding-desk",
     soon: false,
   },
   {
@@ -105,7 +105,7 @@ const items = [
     label: "Resource or template",
     sub: "Checklist, one-pager, link pack",
     emoji: "🔗",
-    href: "#learning-grow",
+    href: "/dashboard/ideas#learning-grow",
     soon: false,
   },
 ] as const;
@@ -123,17 +123,25 @@ export function DashboardCreateMenu({ workspaceHref }: { workspaceHref: string }
     return () => document.removeEventListener("mousedown", fn);
   }, [open]);
 
-  const afterNavigate = (key: string, hash: string) => {
+  const afterNavigate = (key: string, href: string) => {
     setOpen(false);
-    requestAnimationFrame(() => {
-      const target = document.querySelector(hash);
-      target?.scrollIntoView({ behavior: "smooth", block: "start" });
-      if (key === "post") {
-        setTimeout(() => {
-          (document.querySelector(`${hash} textarea[name="body"]`) as HTMLTextAreaElement | null)?.focus();
-        }, 380);
+    try {
+      const u = new URL(href, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+      const hash = u.hash;
+      if (u.pathname === "/dashboard" && hash) {
+        requestAnimationFrame(() => {
+          const target = document.querySelector(hash);
+          target?.scrollIntoView({ behavior: "smooth", block: "start" });
+          if (key === "post") {
+            setTimeout(() => {
+              (document.querySelector(`${hash} textarea[name="body"]`) as HTMLTextAreaElement | null)?.focus();
+            }, 380);
+          }
+        });
       }
-    });
+    } catch {
+      /* ignore */
+    }
   };
 
   return (
@@ -174,7 +182,7 @@ export function DashboardCreateMenu({ workspaceHref }: { workspaceHref: string }
                   </button>
                 ) : (
                   <Link
-                    href={`/dashboard${it.href}`}
+                    href={it.href}
                     className="flex items-start gap-3 px-4 py-2.5 text-slate-800 hover:bg-slate-50"
                     onClick={() => afterNavigate(it.key, it.href)}
                   >

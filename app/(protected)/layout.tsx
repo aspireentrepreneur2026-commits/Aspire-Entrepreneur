@@ -21,17 +21,16 @@ export default async function ProtectedLayout({
             aspire
           </Link>
 
-          <label className="relative hidden min-w-0 max-w-md flex-1 md:block">
-            <span className="sr-only">Search</span>
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
-            <input
-              type="search"
-              readOnly
-              placeholder="Search companies, people, posts (soon)"
-              title="Coming soon"
-              className="w-full rounded-md border border-slate-200 bg-slate-50 py-2 pl-10 pr-3 text-sm text-slate-800 placeholder:text-slate-400 focus:border-[#0a66c2] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0a66c2]/20"
-            />
-          </label>
+          <Link
+            href="/dashboard/discover"
+            className="relative hidden min-w-0 max-w-md flex-1 items-center rounded-md border border-slate-200 bg-slate-50 py-2 pl-10 pr-3 text-left text-sm text-slate-500 shadow-sm transition hover:border-[#0a66c2]/40 hover:bg-white hover:text-slate-700 md:flex"
+            aria-label="Open discover search — people, startups, mentors, ideas"
+          >
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden>
+              🔍
+            </span>
+            <span className="truncate">Search people, startups, mentors, ideas…</span>
+          </Link>
 
           <nav className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
             <Link
@@ -41,18 +40,18 @@ export default async function ProtectedLayout({
               Home
             </Link>
             <Link
-              href="/dashboard#ideas-hub"
+              href="/dashboard/ideas"
               className="hidden rounded-md px-2 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 md:inline"
-              title="Ideas & validation"
+              title="Ideas workspace"
             >
               Ideas
             </Link>
             <Link
-              href="/dashboard#new-business-spotlight"
+              href="/dashboard/discover"
               className="hidden rounded-md px-2 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 lg:inline"
-              title="New businesses & SMEs"
+              title="Discover — search & filters"
             >
-              Business
+              Discover
             </Link>
             <Link
               href="/dashboard#network-members"
@@ -61,9 +60,9 @@ export default async function ProtectedLayout({
               Network
             </Link>
             <Link
-              href="/dashboard#startups"
+              href="/dashboard/startups"
               className="hidden rounded-md px-2 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 xl:inline"
-              title="Startups"
+              title="Startups workspace"
             >
               Startups
             </Link>
