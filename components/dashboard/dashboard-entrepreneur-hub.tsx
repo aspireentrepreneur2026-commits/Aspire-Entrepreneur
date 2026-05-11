@@ -131,7 +131,7 @@ export function DashboardEntrepreneurHub() {
                     <span className="text-emerald-600" aria-hidden>
                       ✓
                     </span>
-                    Live member search (name, email, phone, goals, startups, investors…)
+                    Live member search (name/email/phone in one box, company, location, filters…)
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="text-emerald-600" aria-hidden>

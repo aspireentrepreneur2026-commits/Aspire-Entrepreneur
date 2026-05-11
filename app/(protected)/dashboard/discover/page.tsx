@@ -4,7 +4,19 @@ import { DiscoverMemberResults } from "@/components/dashboard/discover-member-re
 import { discoverSearchMembers } from "@/lib/discover-search";
 import { requireAuth } from "@/lib/session";
 
-type Search = { q?: string; type?: string; location?: string };
+type Search = {
+  q?: string;
+  type?: string;
+  contact?: string;
+  /** @deprecated use `contact`; still read for old links */
+  name?: string;
+  email?: string;
+  phone?: string;
+  location?: string;
+  company?: string;
+  investmentRange?: string;
+  teamSize?: string;
+};
 
 export default async function DiscoverPage({
   searchParams,
@@ -13,21 +25,37 @@ export default async function DiscoverPage({
 }>) {
   const session = await requireAuth();
   const sp = await searchParams;
+  const contact =
+    (sp.contact ?? "").trim() ||
+    (sp.name ?? "").trim() ||
+    (sp.email ?? "").trim() ||
+    (sp.phone ?? "").trim();
+  const location = (sp.location ?? "").trim();
+  const company = (sp.company ?? "").trim();
+  const investmentRange = (sp.investmentRange ?? "").trim();
+  const teamSize = (sp.teamSize ?? "").trim();
   const q = (sp.q ?? "").trim();
   const type = (sp.type ?? "").trim();
-  const location = (sp.location ?? "").trim();
 
   const hasSearched =
-    q.length > 0 ||
+    contact.length > 0 ||
     location.length > 0 ||
+    company.length > 0 ||
+    investmentRange.length > 0 ||
+    teamSize.length > 0 ||
+    q.length > 0 ||
     (type.length > 0 && type.toLowerCase() !== "all");
 
   const members = hasSearched
     ? await discoverSearchMembers({
         viewerId: session.user.id,
+        contact: contact || undefined,
+        location: location || undefined,
+        company: company || undefined,
+        investmentRange: investmentRange || undefined,
+        teamSize: teamSize || undefined,
         q: q || undefined,
         type: type || undefined,
-        location: location || undefined,
       })
     : [];
 
@@ -42,13 +70,21 @@ export default async function DiscoverPage({
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">Discover</p>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">Search members &amp; companies</h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-indigo-100">
-            Profiles appear only after you run a search — use keywords, location, or a role chip, then{" "}
-            <strong className="font-semibold text-white">Search</strong>.
+            One bar: name or email or phone, company, location, investment range, and team size — then{" "}
+            <strong className="font-semibold text-white">Search</strong> or use <strong className="font-semibold text-white">Show me</strong>.
           </p>
         </div>
 
         <div className="px-6 py-8 sm:px-10">
-          <DiscoverFiltersForm initialQ={q || undefined} initialType={type || undefined} initialLocation={location || undefined} />
+          <DiscoverFiltersForm
+            initialContact={contact || undefined}
+            initialLocation={location || undefined}
+            initialCompany={company || undefined}
+            initialInvestmentRange={investmentRange || undefined}
+            initialTeamSize={teamSize || undefined}
+            initialQ={q || undefined}
+            initialType={type || undefined}
+          />
 
           <section className="mt-10" aria-labelledby="discover-results-heading">
             {hasSearched ? (
@@ -59,13 +95,20 @@ export default async function DiscoverPage({
                       Results
                     </h2>
                     <p className="mt-1 text-xs text-slate-500">
-                      Up to 48 matches · signed-in members only · contact fields stay inside Aspire
+                      Up to 48 matches · signed-in members only
                     </p>
                   </div>
-                  <p className="text-sm font-medium text-slate-600">
-                    <span className="text-slate-400">Keywords:</span> {q || "—"} ·{" "}
-                    <span className="text-slate-400">Type:</span> {type || "all"} ·{" "}
-                    <span className="text-slate-400">Location:</span> {location || "—"}
+                  <p className="max-w-2xl text-right text-[11px] font-medium leading-snug text-slate-600 sm:text-xs">
+                    <span className="text-slate-400">Contact</span> {contact || "—"} · <span className="text-slate-400">Co</span>{" "}
+                    {company || "—"} · <span className="text-slate-400">Loc</span> {location || "—"} ·{" "}
+                    <span className="text-slate-400">$</span> {investmentRange || "—"} · <span className="text-slate-400">Team</span>{" "}
+                    {teamSize || "—"} · <span className="text-slate-400">Type</span> {type || "all"}
+                    {q ? (
+                      <>
+                        <br />
+                        <span className="text-slate-400">Keywords</span> {q}
+                      </>
+                    ) : null}
                   </p>
                 </div>
                 <div className="pt-6">
@@ -78,10 +121,11 @@ export default async function DiscoverPage({
                 className="rounded-xl border border-dashed border-slate-200 bg-slate-50/90 px-6 py-14 text-center"
               >
                 <h2 className="text-lg font-semibold text-slate-900">No search yet</h2>
-                <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-600">
-                  Enter keywords or a location and click <strong className="text-slate-800">Search</strong>, or choose a
-                  role under <strong className="text-slate-800">Show me</strong> (e.g. Mentors). Member profiles load
-                  here only after the URL includes those filters.
+                <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-slate-600">
+                  Fill the row above (scroll horizontally on small screens) or pick a <strong className="text-slate-800">Show me</strong>{" "}
+                  filter, then <strong className="text-slate-800">Search</strong>. The first box matches <strong className="text-slate-800">name</strong>,{" "}
+                  <strong className="text-slate-800">email</strong>, or <strong className="text-slate-800">phone</strong>. Company matches startup or investor firm;
+                  investment range matches founder funding text or investor cheque range; team size matches founder team size.
                 </p>
               </div>
             )}

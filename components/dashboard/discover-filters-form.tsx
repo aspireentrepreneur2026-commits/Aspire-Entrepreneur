@@ -10,65 +10,144 @@ const ENTITY_TYPES = [
   { id: "ideas", label: "Ideas & posts" },
 ] as const;
 
-function discoverHref(next: { q?: string; type?: string; location?: string }) {
+export type DiscoverHrefFilters = {
+  contact?: string;
+  location?: string;
+  company?: string;
+  investmentRange?: string;
+  teamSize?: string;
+  q?: string;
+  type?: string;
+};
+
+export function discoverSearchHref(next: DiscoverHrefFilters): string {
   const params = new URLSearchParams();
+  if (next.contact?.trim()) params.set("contact", next.contact.trim());
+  if (next.location?.trim()) params.set("location", next.location.trim());
+  if (next.company?.trim()) params.set("company", next.company.trim());
+  if (next.investmentRange?.trim()) params.set("investmentRange", next.investmentRange.trim());
+  if (next.teamSize?.trim()) params.set("teamSize", next.teamSize.trim());
   if (next.q?.trim()) params.set("q", next.q.trim());
   if (next.type && next.type !== "all") params.set("type", next.type);
-  if (next.location?.trim()) params.set("location", next.location.trim());
   const qs = params.toString();
   return qs ? `/dashboard/discover?${qs}` : "/dashboard/discover";
 }
 
+const fieldClass =
+  "h-10 w-full min-w-[6.5rem] flex-1 rounded-lg border border-slate-200 bg-white px-2.5 text-xs text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-[#0a66c2] focus:outline-none focus:ring-2 focus:ring-[#0a66c2]/20 sm:min-w-0 sm:px-3 sm:text-sm";
+
 export function DiscoverFiltersForm({
+  initialContact,
+  initialLocation,
+  initialCompany,
+  initialInvestmentRange,
+  initialTeamSize,
   initialQ,
   initialType,
-  initialLocation,
 }: {
+  initialContact?: string;
+  initialLocation?: string;
+  initialCompany?: string;
+  initialInvestmentRange?: string;
+  initialTeamSize?: string;
   initialQ?: string;
   initialType?: string;
-  initialLocation?: string;
 }) {
   const activeType = ENTITY_TYPES.some((e) => e.id === initialType) ? (initialType ?? "all") : "all";
 
+  const chipBase: DiscoverHrefFilters = {
+    contact: initialContact,
+    location: initialLocation,
+    company: initialCompany,
+    investmentRange: initialInvestmentRange,
+    teamSize: initialTeamSize,
+    q: initialQ,
+  };
+
   return (
     <div className="space-y-6">
-      <form action="/dashboard/discover" method="get" className="space-y-4">
-        <div>
-          <label htmlFor="discover-q" className="text-sm font-semibold text-slate-800">
-            Keywords
-          </label>
-          <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-            <input
-              id="discover-q"
-              name="q"
-              type="search"
-              defaultValue={initialQ ?? ""}
-              placeholder="Skills, startup name, sector, school, title…"
-              className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-[#0a66c2] focus:outline-none focus:ring-2 focus:ring-[#0a66c2]/20"
-            />
-            <button
-              type="submit"
-              className="shrink-0 rounded-lg bg-[#0a66c2] px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#004182]"
-            >
-              Search
-            </button>
+      <form action="/dashboard/discover" method="get" className="w-full">
+        <div className="w-full overflow-x-auto px-[3%]">
+          <div className="flex w-full max-w-full flex-nowrap items-center gap-1.5 sm:gap-2">
+            <div className="min-w-0 flex-1">
+              <label htmlFor="discover-contact" className="sr-only">
+                Name, email, or phone
+              </label>
+              <input
+                id="discover-contact"
+                name="contact"
+                type="search"
+                autoComplete="off"
+                defaultValue={initialContact ?? ""}
+                placeholder="Name, email, or phone"
+                className={fieldClass}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <label htmlFor="discover-company" className="sr-only">
+                Company name
+              </label>
+              <input
+                id="discover-company"
+                name="company"
+                type="text"
+                defaultValue={initialCompany ?? ""}
+                placeholder="Company name"
+                className={fieldClass}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <label htmlFor="discover-loc" className="sr-only">
+                Location
+              </label>
+              <input
+                id="discover-loc"
+                name="location"
+                type="text"
+                defaultValue={initialLocation ?? ""}
+                placeholder="Location"
+                className={fieldClass}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <label htmlFor="discover-investment" className="sr-only">
+                Investment or cheque range
+              </label>
+              <input
+                id="discover-investment"
+                name="investmentRange"
+                type="text"
+                defaultValue={initialInvestmentRange ?? ""}
+                placeholder="Investment range"
+                className={fieldClass}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <label htmlFor="discover-team" className="sr-only">
+                Team size
+              </label>
+              <input
+                id="discover-team"
+                name="teamSize"
+                type="text"
+                defaultValue={initialTeamSize ?? ""}
+                placeholder="Team size"
+                className={fieldClass}
+              />
+            </div>
+            <div className="shrink-0">
+              <span className="sr-only">Submit search</span>
+              <button
+                type="submit"
+                className="h-10 whitespace-nowrap rounded-lg bg-[#0a66c2] px-3 text-xs font-semibold text-white shadow-sm hover:bg-[#004182] sm:px-5 sm:text-sm"
+              >
+                Search
+              </button>
+            </div>
           </div>
         </div>
 
-        <div>
-          <label htmlFor="discover-loc" className="text-sm font-semibold text-slate-800">
-            Location
-          </label>
-          <input
-            id="discover-loc"
-            name="location"
-            type="text"
-            defaultValue={initialLocation ?? ""}
-            placeholder="City, country, timezone…"
-            className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-[#0a66c2] focus:outline-none focus:ring-2 focus:ring-[#0a66c2]/20"
-          />
-        </div>
-
+        {initialQ ? <input type="hidden" name="q" value={initialQ} /> : null}
         {activeType !== "all" ? <input type="hidden" name="type" value={activeType} /> : null}
       </form>
 
@@ -78,10 +157,9 @@ export function DiscoverFiltersForm({
           {ENTITY_TYPES.map((e) => (
             <Link
               key={e.id}
-              href={discoverHref({
-                q: initialQ,
+              href={discoverSearchHref({
+                ...chipBase,
                 type: e.id,
-                location: initialLocation,
               })}
               className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
                 e.id === "all"

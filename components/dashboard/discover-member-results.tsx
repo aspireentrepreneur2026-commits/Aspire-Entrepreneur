@@ -61,6 +61,7 @@ export function DiscoverMemberResults({ members }: { members: DiscoverMember[] }
                   <Row label="Stage" value={m.founderProfile.stage} />
                   <Row label="Industry" value={m.founderProfile.industry} />
                   <Row label="Funding" value={m.founderProfile.fundingNeeded ?? undefined} />
+                  <Row label="Team size" value={m.founderProfile.teamSize ?? undefined} />
                 </>
               ) : null}
               {m.mentorProfile ? (

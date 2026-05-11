@@ -37,13 +37,23 @@ function ideasKeywordOr(q: string): Prisma.UserWhereInput {
 
 /**
  * Member discover for signed-in users: excludes admins, incomplete onboarding, and the viewer.
+ * Optional `q` keeps legacy broad “keywords” URL working.
+ * `contact` matches name, email, or phone (OR) in one box.
  */
 export async function discoverSearchMembers(params: {
   viewerId: string;
+  contact?: string;
+  company?: string;
+  investmentRange?: string;
+  teamSize?: string;
   q?: string;
   type?: string;
   location?: string;
 }) {
+  const contact = (params.contact ?? "").trim();
+  const company = (params.company ?? "").trim();
+  const investmentRange = (params.investmentRange ?? "").trim();
+  const teamSize = (params.teamSize ?? "").trim();
   const q = (params.q ?? "").trim();
   const location = (params.location ?? "").trim();
   const type = (params.type ?? "").trim().toLowerCase();
@@ -71,6 +81,40 @@ export async function discoverSearchMembers(params: {
         { location: { contains: location, mode: "insensitive" } },
         { country: { contains: location, mode: "insensitive" } },
       ],
+    });
+  }
+
+  if (contact) {
+    and.push({
+      OR: [
+        { name: { contains: contact, mode: "insensitive" } },
+        { email: { contains: contact, mode: "insensitive" } },
+        { phoneNumber: { contains: contact, mode: "insensitive" } },
+      ],
+    });
+  }
+
+  if (company) {
+    and.push({
+      OR: [
+        { founderProfile: { is: { startupName: { contains: company, mode: "insensitive" } } } },
+        { investorProfile: { is: { firmName: { contains: company, mode: "insensitive" } } } },
+      ],
+    });
+  }
+
+  if (investmentRange) {
+    and.push({
+      OR: [
+        { founderProfile: { is: { fundingNeeded: { contains: investmentRange, mode: "insensitive" } } } },
+        { investorProfile: { is: { checkSizeRange: { contains: investmentRange, mode: "insensitive" } } } },
+      ],
+    });
+  }
+
+  if (teamSize) {
+    and.push({
+      founderProfile: { is: { teamSize: { contains: teamSize, mode: "insensitive" } } },
     });
   }
 
@@ -103,6 +147,7 @@ export async function discoverSearchMembers(params: {
           stage: true,
           industry: true,
           fundingNeeded: true,
+          teamSize: true,
         },
       },
       mentorProfile: {
