@@ -4,7 +4,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 /** Only working routes — no placeholders or “soon” items. */
-const shortcuts = [
+type StoryShortcut = {
+  emoji: string;
+  label: string;
+  caption: string;
+  href: string;
+  ring: string;
+  /** When set, full link is `href` + `hash` (e.g. scroll target on dashboard). */
+  hash?: string;
+};
+
+const shortcuts: StoryShortcut[] = [
   { emoji: "✨", label: "Tip", caption: "Onboarding", href: "/onboarding", ring: "from-violet-500 to-fuchsia-600" },
   { emoji: "💡", label: "Ideas", caption: "Workspace", href: "/dashboard/ideas", ring: "from-amber-400 to-orange-600" },
   { emoji: "🔍", label: "Discover", caption: "Search", href: "/dashboard/discover", ring: "from-emerald-500 to-teal-600" },
@@ -14,10 +24,10 @@ const shortcuts = [
     label: "Feed",
     caption: "Community",
     href: "/dashboard",
-    hash: "#feed-start" as const,
     ring: "from-rose-500 to-red-600",
+    hash: "#feed-start",
   },
-] as const;
+];
 
 const ringOuter = "flex h-11 w-11 shrink-0 items-center justify-center rounded-full p-[2px] shadow-sm";
 const ringInner = "flex h-full w-full items-center justify-center rounded-full bg-white text-[15px] leading-none";
