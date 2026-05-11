@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdminUserDetailForms } from "@/components/admin/admin-user-detail-forms";
 import type { AdminUserRowModel } from "@/components/admin/admin-user-row";
+import { publicUserMediaUrl } from "@/lib/profile-media-url";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/session";
 
@@ -67,6 +68,9 @@ export default async function AdminUserDetailPage({
       : null,
   };
 
+  const adminAvatarSrc = publicUserMediaUrl(user.image);
+  const adminCoverSrc = publicUserMediaUrl(user.coverImageUrl);
+
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
       <Link href="/dashboard/admin" className="text-sm font-medium text-indigo-600 hover:text-indigo-800">
@@ -90,21 +94,21 @@ export default async function AdminUserDetailPage({
           </Link>
         </div>
 
-        {(user.image || user.coverImageUrl) && (
+        {(adminAvatarSrc || adminCoverSrc) && (
           <div className="mt-6 flex flex-wrap gap-4">
-            {user.image ? (
+            {adminAvatarSrc ? (
               <div>
                 <p className="text-xs font-medium text-slate-500">Profile photo</p>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={user.image} alt="" className="mt-1 h-20 w-20 rounded-full border border-slate-200 object-cover" />
+                <img src={adminAvatarSrc} alt="" className="mt-1 h-20 w-20 rounded-full border border-slate-200 object-cover" />
               </div>
             ) : null}
-            {user.coverImageUrl ? (
+            {adminCoverSrc ? (
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-medium text-slate-500">Cover</p>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={user.coverImageUrl}
+                  src={adminCoverSrc}
                   alt=""
                   className="mt-1 h-16 max-w-md rounded-lg border border-slate-200 object-cover"
                 />

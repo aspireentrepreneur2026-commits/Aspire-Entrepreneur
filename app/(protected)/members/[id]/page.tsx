@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FollowButton } from "@/components/profile/follow-button";
+import { ProfileAvatarImg, ProfileCoverImg } from "@/components/profile/profile-image-display";
 import { feedAuthorSubtitle } from "@/lib/feed-display-name";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
@@ -120,26 +121,21 @@ export default async function MemberProfilePage({ params }: Readonly<{ params: P
 
       <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-md">
         <div className="relative h-36 bg-gradient-to-r from-slate-700 to-slate-900 sm:h-44">
-          {user.coverImageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- user-provided URL (blob or local)
-            <img src={user.coverImageUrl} alt="" className="h-full w-full object-cover" />
+          {user.coverImageUrl?.trim() ? (
+            <ProfileCoverImg url={user.coverImageUrl} className="h-full w-full object-cover" />
           ) : null}
         </div>
 
         <div className="relative px-6 pb-8 pt-0">
           <div className="-mt-14 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-end gap-4">
-              <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full border-4 border-white bg-gradient-to-br from-[#0a66c2] to-[#004182] text-3xl font-bold text-white shadow-lg ring-1 ring-slate-200/80">
-                {user.image ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={user.image}
-                    alt=""
-                    className="h-full w-full rounded-full object-cover"
-                  />
-                ) : (
-                  initial
-                )}
+              <div className="flex h-28 w-28 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-gradient-to-br from-[#0a66c2] to-[#004182] text-3xl font-bold text-white shadow-lg ring-1 ring-slate-200/80">
+                <ProfileAvatarImg
+                  url={user.image}
+                  initial={initial}
+                  imgClassName="h-full w-full rounded-full object-cover"
+                  fallbackClassName="text-3xl font-bold"
+                />
               </div>
               <div className="min-w-0 pb-1 pt-12 sm:pt-0">
                 <p className="text-xs font-semibold uppercase tracking-wide text-[#0a66c2]">{user.role}</p>

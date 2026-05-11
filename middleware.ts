@@ -6,5 +6,6 @@ const { auth } = NextAuth(authConfig);
 export default auth(() => {});
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  /** Skip auth middleware for public assets (profile/cover under /uploads must not be intercepted). */
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|uploads).*)"],
 };

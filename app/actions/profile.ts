@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { auth } from "@/auth";
-import { isAllowedProfileImageUrl } from "@/lib/profile-media-url";
+import { isAllowedProfileImageUrl, publicUserMediaUrl } from "@/lib/profile-media-url";
 import { prisma } from "@/lib/prisma";
 
 export type ProfileActionState = { error?: string; success?: string };
@@ -30,23 +30,25 @@ export async function saveProfileMediaAction(
     return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
   }
 
-  const { profileImageUrl, coverImageUrl } = parsed.data;
-  if (!profileImageUrl && !coverImageUrl) {
+  const profileNorm = profileImageUrl ? publicUserMediaUrl(profileImageUrl) : undefined;
+  const coverNorm = coverImageUrl ? publicUserMediaUrl(coverImageUrl) : undefined;
+
+  if (!profileNorm && !coverNorm) {
     return { error: "Nothing to save." };
   }
 
-  if (profileImageUrl && !isAllowedProfileImageUrl(profileImageUrl)) {
+  if (profileNorm && !isAllowedProfileImageUrl(profileNorm)) {
     return { error: "Invalid profile photo URL." };
   }
-  if (coverImageUrl && !isAllowedProfileImageUrl(coverImageUrl)) {
+  if (coverNorm && !isAllowedProfileImageUrl(coverNorm)) {
     return { error: "Invalid cover image URL." };
   }
 
   await prisma.user.update({
     where: { id: session.user.id },
     data: {
-      ...(profileImageUrl ? { image: profileImageUrl } : {}),
-      ...(coverImageUrl ? { coverImageUrl } : {}),
+      ...(profileNorm ? { image: profileNorm } : {}),
+      ...(coverNorm ? { coverImageUrl: coverNorm } : {}),
     },
   });
 

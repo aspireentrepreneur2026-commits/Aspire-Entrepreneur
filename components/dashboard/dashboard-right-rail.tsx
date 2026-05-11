@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FollowButton } from "@/components/profile/follow-button";
+import { ProfileAvatarImg } from "@/components/profile/profile-image-display";
 import { feedAuthorSubtitle } from "@/lib/feed-display-name";
 
 /** Shape matches prisma select for dashboard discover slice */
@@ -98,12 +99,12 @@ export function DashboardRightRail({
                       href={`/members/${m.id}`}
                       className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-slate-600 to-slate-800 text-sm font-semibold text-white ring-1 ring-slate-200/80 hover:opacity-95"
                     >
-                      {m.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={m.image} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        initials
-                      )}
+                      <ProfileAvatarImg
+                        url={m.image}
+                        initial={initials}
+                        imgClassName="h-full w-full object-cover"
+                        fallbackClassName="text-sm font-semibold"
+                      />
                     </Link>
                     <div className="min-w-0 flex-1">
                       <Link

@@ -6,6 +6,7 @@ import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardStoriesStrip } from "@/components/dashboard/dashboard-stories-strip";
 import { FeedComposer } from "@/components/feed/feed-composer";
 import { FeedPostCard } from "@/components/feed/feed-post-card";
+import { ProfileAvatarImg } from "@/components/profile/profile-image-display";
 import { getRoleDashboardPath } from "@/lib/auth-redirect";
 import { feedAuthorSubtitle } from "@/lib/feed-display-name";
 import { feedPostInclude, toFeedPostView } from "@/lib/feed-serialize";
@@ -282,12 +283,12 @@ function DiscoverMemberCard({
       <Link href={`/members/${member.id}`} className="block p-4 transition hover:bg-slate-50/80">
         <div className="flex gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-slate-600 to-slate-800 text-lg font-semibold text-white">
-            {member.image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={member.image} alt="" className="h-full w-full object-cover" />
-            ) : (
-              initial
-            )}
+            <ProfileAvatarImg
+              url={member.image}
+              initial={initial}
+              imgClassName="h-full w-full object-cover"
+              fallbackClassName="text-lg font-semibold"
+            />
           </div>
           <div className="min-w-0">
             <span className="text-[11px] font-semibold uppercase tracking-wide text-[#0a66c2]">

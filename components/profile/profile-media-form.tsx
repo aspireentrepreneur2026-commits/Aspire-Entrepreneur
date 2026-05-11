@@ -4,6 +4,7 @@ import { upload } from "@vercel/blob/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { saveProfileMediaAction, type ProfileActionState } from "@/app/actions/profile";
+import { publicUserMediaUrl } from "@/lib/profile-media-url";
 
 type Caps = { mode: "blob" | "multipart" | "disabled"; multipartMaxMb: number };
 
@@ -29,6 +30,11 @@ export function ProfileMediaForm({
       .then((d: Caps) => setCaps(d))
       .catch(() => setCaps({ mode: "multipart", multipartMaxMb: 15 }));
   }, []);
+
+  useEffect(() => {
+    setAvatarUrl(initialAvatarUrl);
+    setCoverUrl(initialCoverUrl);
+  }, [initialAvatarUrl, initialCoverUrl]);
 
   const uploadOne = async (file: File, slot: "avatar" | "cover") => {
     setHint(null);
@@ -94,6 +100,9 @@ export function ProfileMediaForm({
     }
   };
 
+  const avatarDisplay = publicUserMediaUrl(avatarUrl);
+  const coverDisplay = publicUserMediaUrl(coverUrl);
+
   return (
     <div className="rounded-2xl border border-indigo-100 bg-white p-6 shadow-[0_16px_40px_rgba(15,23,42,0.06)]">
       <h2 className="text-lg font-semibold text-slate-900">Profile & cover photos</h2>
@@ -105,9 +114,9 @@ export function ProfileMediaForm({
         <div className="space-y-3">
           <p className="text-sm font-medium text-slate-700">Profile photo</p>
           <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-slate-200 bg-slate-100 text-2xl font-bold text-slate-500">
-            {avatarUrl ? (
+            {avatarDisplay ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
+              <img src={avatarDisplay} alt="" className="h-full w-full object-cover" />
             ) : (
               "?"
             )}
@@ -131,9 +140,9 @@ export function ProfileMediaForm({
         <div className="space-y-3">
           <p className="text-sm font-medium text-slate-700">Cover image</p>
           <div className="flex h-20 w-full max-w-sm items-center justify-center overflow-hidden rounded-lg border-2 border-slate-200 bg-slate-100 text-slate-400">
-            {coverUrl ? (
+            {coverDisplay ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+              <img src={coverDisplay} alt="" className="h-full w-full object-cover" />
             ) : (
               <span className="text-xs">Wide banner (optional)</span>
             )}
