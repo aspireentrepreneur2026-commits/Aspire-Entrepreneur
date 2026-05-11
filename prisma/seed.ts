@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { OnboardingStatus, PrismaClient, UserRole } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { BULK_DEMO_PASSWORD, seedBulkDemoUsers } from "./seed-bulk-demo";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -12,11 +13,12 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const email = "admin@entrepreneurship.local";
-  const passwordHash = await bcrypt.hash("Admin1234", 10);
+  const adminEmail = "admin@entrepreneurship.local";
+  const passwordHashAdmin = await bcrypt.hash("Admin1234", 10);
+  const passwordHashDemo = await bcrypt.hash(BULK_DEMO_PASSWORD, 10);
 
   await prisma.user.upsert({
-    where: { email },
+    where: { email: adminEmail },
     update: {
       name: "Platform Admin",
       phoneNumber: "+10000000000",
@@ -30,11 +32,11 @@ async function main() {
       onboardingStatus: OnboardingStatus.COMPLETED,
       emailVerified: new Date(),
       phoneVerifiedAt: new Date(),
-      passwordHash,
+      passwordHash: passwordHashAdmin,
     },
     create: {
       name: "Platform Admin",
-      email,
+      email: adminEmail,
       phoneNumber: "+10000000000",
       country: "Pakistan",
       location: "Lahore",
@@ -46,13 +48,16 @@ async function main() {
       onboardingStatus: OnboardingStatus.COMPLETED,
       emailVerified: new Date(),
       phoneVerifiedAt: new Date(),
-      passwordHash,
+      passwordHash: passwordHashAdmin,
     },
   });
 
+  await seedBulkDemoUsers(prisma, passwordHashDemo);
+
   console.log("Seed complete.");
-  console.log("Admin login:", email);
-  console.log("Admin password: Admin1234");
+  console.log("Admin:", adminEmail, "/ Admin1234");
+  console.log(`50 demo members: persona.01.demo@example.local … persona.50.demo@example.local / ${BULK_DEMO_PASSWORD}`);
+  console.log("Mix: 18 founders, 16 mentors, 16 investors — avatar (pravatar.cc), cover (picsum), all profile text fields filled.");
 }
 
 main()
