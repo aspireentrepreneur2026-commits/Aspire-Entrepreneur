@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { DashboardCreateMenu } from "@/components/dashboard/dashboard-create-menu";
+import { ExtendedProfileReminder } from "@/components/dashboard/extended-profile-reminder";
 import { getRoleDashboardPath } from "@/lib/auth-redirect";
 import { requireAuth } from "@/lib/session";
 
@@ -60,11 +61,11 @@ export default async function ProtectedLayout({
               Network
             </Link>
             <Link
-              href="/dashboard#startup-jobs"
+              href="/dashboard#startups"
               className="hidden rounded-md px-2 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 xl:inline"
-              title="Startup jobs"
+              title="Startups"
             >
-              Jobs
+              Startups
             </Link>
             <button
               type="button"
@@ -118,6 +119,7 @@ export default async function ProtectedLayout({
           </nav>
         </div>
       </header>
+      <ExtendedProfileReminder />
       {children}
     </>
   );

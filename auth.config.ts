@@ -17,6 +17,7 @@ const authConfig = {
         nextUrl.pathname.startsWith("/onboarding") ||
         nextUrl.pathname.startsWith("/dashboard") ||
         nextUrl.pathname.startsWith("/settings") ||
+        nextUrl.pathname.startsWith("/members") ||
         nextUrl.pathname.startsWith("/admin");
 
       if (isProtectedPage && !isLoggedIn) {

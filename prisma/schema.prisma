@@ -30,6 +30,12 @@ enum FeedAttachmentKind {
   LINK
 }
 
+enum ProfileApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 model User {
   id              String           @id @default(cuid())
   name            String
@@ -45,9 +51,16 @@ model User {
   passwordHash    String
   role            UserRole         @default(FOUNDER)
   onboardingStatus OnboardingStatus @default(BASIC)
+  /** Profile photo (avatar), like LinkedIn / Instagram. */
   image           String?
+  /** Wide cover image behind the avatar on member profile. */
+  coverImageUrl   String?
+  profileApprovalStatus ProfileApprovalStatus @default(APPROVED)
+  profileApprovalNote   String? @db.Text
   emailVerified   DateTime?
   phoneVerifiedAt DateTime?
+  /** Set when user saves the post-onboarding extended profile (all sections). */
+  extendedProfileCompletedAt DateTime?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
   founderProfile  FounderProfile?
@@ -56,6 +69,8 @@ model User {
   verificationCodes VerificationCode[]
   feedPosts       FeedPost[]
   feedComments    FeedComment[]
+  following       UserFollow[]     @relation("Following")
+  followers       UserFollow[]     @relation("Followers")
 }
 
 model FeedPost {
@@ -94,6 +109,19 @@ model FeedComment {
   @@index([postId])
 }
 
+model UserFollow {
+  id          String   @id @default(cuid())
+  followerId String
+  followingId String
+  createdAt   DateTime @default(now())
+  follower    User     @relation("Following", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("Followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
 model VerificationCode {
   id         String           @id @default(cuid())
   userId     String
@@ -126,6 +154,12 @@ model FounderProfile {
   teamSize       String?
   traction       String?
   fundingNeeded  String?
+  industryExpertiseNarrative String? @db.Text
+  studyWorkBackground        String? @db.Text
+  achievements               String? @db.Text
+  investmentCapital          String? @db.Text
+  investmentInterest         String? @db.Text
+  investmentHistory          String? @db.Text
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -139,6 +173,12 @@ model MentorProfile {
   pastCompanies     String?
   mentoringStyle    String?
   availability      String?
+  industryExpertiseNarrative String? @db.Text
+  studyWorkBackground        String? @db.Text
+  achievements               String? @db.Text
+  investmentCapital          String? @db.Text
+  investmentInterest         String? @db.Text
+  investmentHistory          String? @db.Text
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -152,6 +192,12 @@ model InvestorProfile {
   investmentStage      String
   sectorsOfInterest    String
   preferredGeography   String?
+  industryExpertiseNarrative String? @db.Text
+  studyWorkBackground        String? @db.Text
+  achievements               String? @db.Text
+  investmentCapital          String? @db.Text
+  investmentInterest         String? @db.Text
+  investmentHistory          String? @db.Text
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -5,6 +5,15 @@ import type { AdminUserRowModel } from "@/components/admin/admin-user-row";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/session";
 
+type ProfessionalDepthFields = {
+  industryExpertiseNarrative: string | null;
+  studyWorkBackground: string | null;
+  achievements: string | null;
+  investmentCapital: string | null;
+  investmentInterest: string | null;
+  investmentHistory: string | null;
+};
+
 export default async function AdminUserDetailPage({
   params,
 }: Readonly<{
@@ -33,6 +42,10 @@ export default async function AdminUserDetailPage({
     phoneNumber: user.phoneNumber,
     role: user.role,
     onboardingStatus: user.onboardingStatus,
+    profileApprovalStatus: user.profileApprovalStatus,
+    profileApprovalNote: user.profileApprovalNote,
+    image: user.image,
+    coverImageUrl: user.coverImageUrl,
     primaryGoal: user.primaryGoal,
     joinAim: user.joinAim,
     country: user.country,
@@ -64,6 +77,41 @@ export default async function AdminUserDetailPage({
         <p className="text-xs uppercase tracking-wide text-slate-500">User record</p>
         <h1 className="mt-2 text-3xl font-semibold text-slate-900">{user.name}</h1>
         <p className="mt-1 text-slate-600">{user.email}</p>
+
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700">
+            Profile: {user.profileApprovalStatus}
+          </span>
+          <Link
+            href={`/members/${user.id}`}
+            className="text-sm font-semibold text-[#0a66c2] hover:underline"
+          >
+            View as member →
+          </Link>
+        </div>
+
+        {(user.image || user.coverImageUrl) && (
+          <div className="mt-6 flex flex-wrap gap-4">
+            {user.image ? (
+              <div>
+                <p className="text-xs font-medium text-slate-500">Profile photo</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={user.image} alt="" className="mt-1 h-20 w-20 rounded-full border border-slate-200 object-cover" />
+              </div>
+            ) : null}
+            {user.coverImageUrl ? (
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-slate-500">Cover</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={user.coverImageUrl}
+                  alt=""
+                  className="mt-1 h-16 max-w-md rounded-lg border border-slate-200 object-cover"
+                />
+              </div>
+            ) : null}
+          </div>
+        )}
 
         <dl className="mt-8 grid gap-4 text-sm sm:grid-cols-2">
           <div>
@@ -97,6 +145,14 @@ export default async function AdminUserDetailPage({
           <div>
             <dt className="font-medium text-slate-500">Primary goal</dt>
             <dd className="text-slate-900">{user.primaryGoal ?? "—"}</dd>
+          </div>
+          <div>
+            <dt className="font-medium text-slate-500">Extended profile completed</dt>
+            <dd className="text-slate-900">
+              {user.extendedProfileCompletedAt
+                ? user.extendedProfileCompletedAt.toLocaleString()
+                : "—"}
+            </dd>
           </div>
           <div>
             <dt className="font-medium text-slate-500">Joined</dt>
@@ -192,6 +248,8 @@ export default async function AdminUserDetailPage({
           </div>
         ) : null}
 
+        <AdminExtendedProfileSection user={user} />
+
         <div className="mt-10 border-t border-slate-200 pt-8">
           <p className="text-sm font-semibold text-slate-800">Admin controls</p>
           <p className="mt-1 text-sm text-slate-600">
@@ -201,5 +259,72 @@ export default async function AdminUserDetailPage({
         </div>
       </div>
     </main>
+  );
+}
+
+function AdminExtendedProfileSection({
+  user,
+}: Readonly<{
+  user: {
+    role: string;
+    founderProfile: ProfessionalDepthFields | null;
+    mentorProfile: ProfessionalDepthFields | null;
+    investorProfile: ProfessionalDepthFields | null;
+  };
+}>) {
+  const extended =
+    user.role === "FOUNDER"
+      ? user.founderProfile
+      : user.role === "MENTOR"
+        ? user.mentorProfile
+        : user.role === "INVESTOR"
+          ? user.investorProfile
+          : null;
+
+  if (!extended) {
+    return null;
+  }
+
+  const hasAny =
+    !!extended.industryExpertiseNarrative?.trim() ||
+    !!extended.studyWorkBackground?.trim() ||
+    !!extended.achievements?.trim() ||
+    !!extended.investmentCapital?.trim() ||
+    !!extended.investmentInterest?.trim() ||
+    !!extended.investmentHistory?.trim();
+
+  return (
+    <div className="mt-8 rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
+      <p className="text-sm font-semibold text-slate-800">Professional depth (post-onboarding)</p>
+      {!hasAny ? (
+        <p className="mt-2 text-sm text-slate-600">No extended fields submitted yet.</p>
+      ) : (
+        <dl className="mt-3 space-y-3 text-sm">
+          <AdminProfileRow label="Industry expertise" value={extended.industryExpertiseNarrative} />
+          <AdminProfileRow label="Study & work background" value={extended.studyWorkBackground} />
+          <AdminProfileRow label="Achievements" value={extended.achievements} />
+          <AdminProfileRow label="Investment capital" value={extended.investmentCapital} />
+          <AdminProfileRow label="Investment interest" value={extended.investmentInterest} />
+          <AdminProfileRow label="Investment history" value={extended.investmentHistory} />
+        </dl>
+      )}
+    </div>
+  );
+}
+
+function AdminProfileRow({ label, value }: { label: string; value: string | null | undefined }) {
+  if (!value?.trim()) {
+    return (
+      <div>
+        <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</dt>
+        <dd className="mt-0.5 text-slate-500">—</dd>
+      </div>
+    );
+  }
+  return (
+    <div>
+      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</dt>
+      <dd className="mt-0.5 whitespace-pre-wrap text-slate-900">{value}</dd>
+    </div>
   );
 }

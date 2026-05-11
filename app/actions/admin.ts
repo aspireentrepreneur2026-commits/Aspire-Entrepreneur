@@ -107,3 +107,43 @@ export async function adminUpdateUserOnboarding(
   revalidatePath(`/dashboard/admin/users/${parsed.data.userId}`);
   return { success: "Onboarding status updated." };
 }
+
+const profileApprovalSchema = z.object({
+  userId: z.string().min(1),
+  status: z.enum(["PENDING", "APPROVED", "REJECTED"]),
+  note: z.string().max(2000).optional(),
+});
+
+export async function adminUpdateProfileApproval(
+  _prev: AdminActionState | undefined,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const session = await requireAdminSession();
+  if (!session) {
+    return { error: "Not authorized." };
+  }
+
+  const parsed = profileApprovalSchema.safeParse({
+    userId: formData.get("userId"),
+    status: formData.get("status"),
+    note: formData.get("note")?.toString() ?? "",
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid profile approval update." };
+  }
+
+  await prisma.user.update({
+    where: { id: parsed.data.userId },
+    data: {
+      profileApprovalStatus: parsed.data.status,
+      profileApprovalNote:
+        parsed.data.status === "REJECTED" ? (parsed.data.note?.trim() || null) : null,
+    },
+  });
+
+  revalidatePath("/dashboard/admin");
+  revalidatePath(`/dashboard/admin/users/${parsed.data.userId}`);
+  revalidatePath(`/members/${parsed.data.userId}`);
+  revalidatePath("/dashboard");
+  return { success: "Profile visibility updated." };
+}

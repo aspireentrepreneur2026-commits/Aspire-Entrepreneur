@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import {
+  adminUpdateProfileApproval,
   adminUpdateUserOnboarding,
   adminUpdateUserRole,
   type AdminActionState,
@@ -22,13 +23,19 @@ export function AdminUserDetailForms({
     adminUpdateUserOnboarding,
     initialAdminState,
   );
+  const [profileState, profileAction, profilePending] = useActionState(
+    adminUpdateProfileApproval,
+    initialAdminState,
+  );
 
   const feedback =
     roleState?.error ||
     onboardingState?.error ||
+    profileState?.error ||
     roleState?.success ||
-    onboardingState?.success;
-  const feedbackIsError = !!(roleState?.error || onboardingState?.error);
+    onboardingState?.success ||
+    profileState?.success;
+  const feedbackIsError = !!(roleState?.error || onboardingState?.error || profileState?.error);
 
   return (
     <div className="mt-6 space-y-4">
@@ -84,6 +91,47 @@ export function AdminUserDetailForms({
           </button>
         </form>
       </div>
+
+      <form action={profileAction} className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <input type="hidden" name="userId" value={model.id} />
+        <p className="text-sm font-medium text-slate-700">Member profile visibility</p>
+        <p className="text-xs text-slate-500">
+          Approved profiles show name, goal, about, and photos to other signed-in members. Rejected hides the card
+          from non-admins.
+        </p>
+        <label htmlFor={`profile-status-${model.id}`} className="block text-sm font-medium text-slate-700">
+          Status
+        </label>
+        <select
+          id={`profile-status-${model.id}`}
+          name="status"
+          defaultValue={model.profileApprovalStatus ?? "APPROVED"}
+          disabled={profilePending}
+          className="w-full max-w-md rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500"
+        >
+          <option value="APPROVED">Approved — visible to members</option>
+          <option value="PENDING">Pending — limited visibility</option>
+          <option value="REJECTED">Rejected — hidden from members</option>
+        </select>
+        <label htmlFor={`profile-note-${model.id}`} className="block text-sm font-medium text-slate-700">
+          Note (optional, shown to admins / stored when rejected)
+        </label>
+        <textarea
+          id={`profile-note-${model.id}`}
+          name="note"
+          rows={2}
+          defaultValue={model.profileApprovalNote ?? ""}
+          placeholder="Reason for rejection or internal note…"
+          className="w-full max-w-md rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-500"
+        />
+        <button
+          type="submit"
+          disabled={profilePending}
+          className="rounded-md bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900 disabled:opacity-50"
+        >
+          {profilePending ? "Saving…" : "Save profile visibility"}
+        </button>
+      </form>
 
       {feedback ? (
         <p className={`text-sm ${feedbackIsError ? "text-red-600" : "text-green-700"}`}>{feedback}</p>

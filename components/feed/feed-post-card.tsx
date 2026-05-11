@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { feedAuthorSubtitle } from "@/lib/feed-display-name";
 import { FeedCommentForm } from "@/components/feed/feed-comment-form";
 import { FeedDeleteButton } from "@/components/feed/feed-delete-button";
@@ -45,7 +46,12 @@ export function FeedPostCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <p className="text-[15px] font-semibold leading-tight text-slate-900">{post.author.name}</p>
+              <Link
+                href={`/members/${post.author.id}`}
+                className="text-[15px] font-semibold leading-tight text-slate-900 hover:text-[#0a66c2] hover:underline"
+              >
+                {post.author.name}
+              </Link>
               <p className="mt-0.5 truncate text-sm text-slate-600">{authorLine}</p>
               <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                 <span>{timeLabel}</span>

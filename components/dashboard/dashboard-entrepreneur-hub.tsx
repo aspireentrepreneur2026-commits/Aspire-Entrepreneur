@@ -96,13 +96,13 @@ const hubs: HubEntry[] = [
     },
   },
   {
-    id: "startup-jobs",
+    id: "startups",
     tab: "business",
     icon: "💼",
-    title: "Startup jobs",
-    blurb: "Announce roles for early teams — posting board, ATS sync, and apply-in-app flows are planned next.",
-    bullets: ["Part-time / intern roles", "Equity-heavy roles", "Remote-friendly tags • soon"],
-    cta: { label: "Announce hiring in the feed →", hash: "#feed-start" },
+    title: "Startups",
+    blurb: "Surface your startup and team growth — discovery, matching, and apply-in-app flows are planned next.",
+    bullets: ["Early-stage startup profiles", "Growth & fundraising milestones", "Remote-friendly tags • soon"],
+    cta: { label: "Highlight your startup in the feed →", hash: "#feed-start" },
     accent: {
       gradient: "from-slate-50 to-indigo-50/45",
       bar: "bg-gradient-to-b from-indigo-400 to-slate-700",

@@ -45,11 +45,11 @@ const items = [
     soon: true,
   },
   {
-    key: "job",
-    label: "Startup job listing",
-    sub: "Hiring for your team",
+    key: "startup",
+    label: "Startup listing",
+    sub: "Showcase your startup",
     emoji: "💼",
-    href: "#startup-jobs",
+    href: "#startups",
     soon: false,
   },
   {

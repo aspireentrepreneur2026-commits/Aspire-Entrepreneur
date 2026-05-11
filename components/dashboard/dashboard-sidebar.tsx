@@ -64,6 +64,7 @@ export function DashboardSidebar({
           <p className="px-4 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">Shortcuts</p>
           <NavRow href="/dashboard#feed-start" icon={<NavIcon>🏠</NavIcon>} label="Home feed" />
           <NavRow href="/dashboard#network-members" icon={<NavIcon>👥</NavIcon>} label="Member network" />
+          <NavRow href="/members/me" icon={<NavIcon>🪪</NavIcon>} label="My profile" />
           <NavRow href={myDashboardHref} icon={<NavIcon>📊</NavIcon>} label="My dashboard" />
           <NavRow href="/settings" icon={<NavIcon>⚙️</NavIcon>} label="Settings" />
           {isAdmin ? (
@@ -82,7 +83,7 @@ export function DashboardSidebar({
           />
           <NavRow href="/dashboard#funding-desk" icon={<NavIcon>💰</NavIcon>} label="Funding desk" />
           <NavRow href="/dashboard#mentorship-lab" icon={<NavIcon>🎓</NavIcon>} label="Mentorship" />
-          <NavRow href="/dashboard#startup-jobs" icon={<NavIcon>💼</NavIcon>} label="Startup jobs" />
+          <NavRow href="/dashboard#startups" icon={<NavIcon>💼</NavIcon>} label="Startups" />
           <NavRow href="/dashboard#learning-grow" icon={<NavIcon>📚</NavIcon>} label="Learning & playbooks" />
           <NavRow href="/onboarding" icon={<NavIcon>✨</NavIcon>} label="Profile wizard" />
 

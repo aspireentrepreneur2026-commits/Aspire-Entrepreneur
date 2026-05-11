@@ -9,6 +9,10 @@ type Props = {
   user: {
     name: string;
     role: Role;
+    image?: string | null;
+    coverImageUrl?: string | null;
+    profileApprovalStatus?: string;
+    profileApprovalNote?: string | null;
     phoneNumber: string | null;
     country: string | null;
     location: string | null;

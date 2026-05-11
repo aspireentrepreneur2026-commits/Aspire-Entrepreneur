@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FollowButton } from "@/components/profile/follow-button";
 import { feedAuthorSubtitle } from "@/lib/feed-display-name";
 
 /** Shape matches prisma select for dashboard discover slice */
@@ -6,6 +7,8 @@ export type DashboardDiscoverMember = {
   id: string;
   name: string;
   role: string;
+  image?: string | null;
+  profileApprovalStatus?: string;
   country: string | null;
   location: string | null;
   founderProfile: { startupName: string } | null;
@@ -32,13 +35,19 @@ const founderPrompts = [
 const trendingTags = [
   { label: "#idea", href: "/dashboard#ideas-hub" },
   { label: "#newbusiness", href: "/dashboard#new-business-spotlight" },
-  { label: "#hiring", href: "/dashboard#startup-jobs" },
+  { label: "#startups", href: "/dashboard#startups" },
   { label: "#mentorwanted", href: "/dashboard#mentorship-lab" },
   { label: "#funding", href: "/dashboard#funding-desk" },
   { label: "#buildinpublic", href: "/dashboard#feed-start" },
 ];
 
-export function DashboardRightRail({ members }: { members: DashboardDiscoverMember[] }) {
+export function DashboardRightRail({
+  members,
+  followingIds,
+}: {
+  members: DashboardDiscoverMember[];
+  followingIds: Set<string>;
+}) {
   const prompt = founderPrompts[members.length % founderPrompts.length];
 
   return (
@@ -76,32 +85,44 @@ export function DashboardRightRail({ members }: { members: DashboardDiscoverMemb
         <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-white p-4 shadow-sm">
           <h2 className="text-[15px] font-semibold text-slate-900">People in your network</h2>
           <p className="mt-1 text-xs text-slate-500">
-            Members who finished onboarding — visible only when you are signed in, not public on the web. Follow buttons
-            are coming next.
+            Members who finished onboarding — tap a name to open their profile. Follow when their profile is approved.
           </p>
           <ul className="mt-4 space-y-4">
             {members.slice(0, 8).map((m) => {
               const initials = m.name.trim().charAt(0).toUpperCase() || "?";
+              const approved = m.profileApprovalStatus === "APPROVED";
               return (
                 <li key={m.id}>
                   <div className="flex gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-600 to-slate-800 text-sm font-semibold text-white">
-                      {initials}
-                    </div>
+                    <Link
+                      href={`/members/${m.id}`}
+                      className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-slate-600 to-slate-800 text-sm font-semibold text-white ring-1 ring-slate-200/80 hover:opacity-95"
+                    >
+                      {m.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.image} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        initials
+                      )}
+                    </Link>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[14px] font-semibold text-slate-900">{m.name}</p>
+                      <Link
+                        href={`/members/${m.id}`}
+                        className="truncate text-[14px] font-semibold text-slate-900 hover:text-[#0a66c2] hover:underline"
+                      >
+                        {m.name}
+                      </Link>
                       <p className="truncate text-xs text-slate-600">{memberSubtitle(m)}</p>
                       <p className="truncate text-xs text-slate-400">
                         {[m.location, m.country].filter(Boolean).join(" · ") || "Aspire member"}
                       </p>
-                      <button
-                        type="button"
-                        disabled
-                        title="Coming soon"
-                        className="mt-2 w-full rounded-full border border-slate-300 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        + Follow (soon)
-                      </button>
+                      <div className="mt-2">
+                        <FollowButton
+                          targetUserId={m.id}
+                          initialFollowing={followingIds.has(m.id)}
+                          canFollow={approved}
+                        />
+                      </div>
                     </div>
                   </div>
                 </li>

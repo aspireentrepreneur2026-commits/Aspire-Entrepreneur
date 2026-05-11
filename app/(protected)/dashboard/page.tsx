@@ -19,7 +19,7 @@ export default async function DashboardPage() {
   const displayName = session.user.name?.trim() || "Member";
   const initials = displayName.trim().charAt(0).toUpperCase() || "?";
 
-  const [me, feedPosts, memberNetworkRows] = await Promise.all([
+  const [me, feedPosts, memberNetworkRows, myFollows] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
@@ -43,6 +43,8 @@ export default async function DashboardPage() {
         id: true,
         name: true,
         role: true,
+        image: true,
+        profileApprovalStatus: true,
         country: true,
         location: true,
         primaryGoal: true,
@@ -74,6 +76,10 @@ export default async function DashboardPage() {
         },
       },
     }),
+    prisma.userFollow.findMany({
+      where: { followerId: session.user.id },
+      select: { followingId: true },
+    }),
   ]);
 
   const feedViews = feedPosts.map(toFeedPostView);
@@ -87,10 +93,14 @@ export default async function DashboardPage() {
       })
     : displayName;
 
+  const followingIds = new Set(myFollows.map((f) => f.followingId));
+
   const networkRailSlice: DashboardDiscoverMember[] = memberNetworkRows.map((m) => ({
     id: m.id,
     name: m.name,
     role: m.role,
+    image: m.image,
+    profileApprovalStatus: m.profileApprovalStatus,
     country: m.country,
     location: m.location,
     founderProfile: m.founderProfile ? { startupName: m.founderProfile.startupName } : null,
@@ -115,7 +125,8 @@ export default async function DashboardPage() {
 
             <div className="flex gap-3 overflow-x-auto pb-2 lg:hidden">
               <Shortcut href={myDashboardPath} emoji="📊" label="Workspace" />
-              <Shortcut href="/settings" emoji="⚙️" label="Profile" />
+              <Shortcut href="/members/me" emoji="🪪" label="My profile" />
+              <Shortcut href="/settings" emoji="⚙️" label="Settings" />
               <Shortcut href="/onboarding" emoji="✨" label="Onboarding" />
             </div>
 
@@ -161,7 +172,10 @@ export default async function DashboardPage() {
             <DashboardEntrepreneurHub />
           </div>
 
-          <DashboardRightRail members={networkRailSlice.filter((x) => x.id !== session.user.id)} />
+          <DashboardRightRail
+            members={networkRailSlice.filter((x) => x.id !== session.user.id)}
+            followingIds={followingIds}
+          />
         </div>
 
         <section
@@ -235,6 +249,8 @@ function DiscoverMemberCard({
     id: string;
     name: string;
     role: string;
+    image: string | null;
+    profileApprovalStatus: string;
     country: string | null;
     location: string | null;
     primaryGoal: string | null;
@@ -263,21 +279,33 @@ function DiscoverMemberCard({
   const initial = member.name.trim().charAt(0).toUpperCase() || "?";
   return (
     <article className="overflow-hidden rounded-lg border border-slate-200/90 bg-white shadow-sm transition hover:border-[#0a66c2]/30 hover:shadow-md">
-      <div className="flex gap-4 p-4">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-600 to-slate-800 text-lg font-semibold text-white">
-          {initial}
+      <Link href={`/members/${member.id}`} className="block p-4 transition hover:bg-slate-50/80">
+        <div className="flex gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-slate-600 to-slate-800 text-lg font-semibold text-white">
+            {member.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={member.image} alt="" className="h-full w-full object-cover" />
+            ) : (
+              initial
+            )}
+          </div>
+          <div className="min-w-0">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-[#0a66c2]">
+              {member.role}
+            </span>
+            <h3 className="text-base font-semibold text-slate-900">{member.name}</h3>
+            <p className="truncate text-xs text-slate-500">
+              {member.location ?? "Location hidden"}
+              {member.country ? ` · ${member.country}` : ""}
+            </p>
+            {member.profileApprovalStatus !== "APPROVED" ? (
+              <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-amber-700">
+                Profile: {member.profileApprovalStatus.toLowerCase()}
+              </p>
+            ) : null}
+          </div>
         </div>
-        <div className="min-w-0">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-[#0a66c2]">
-            {member.role}
-          </span>
-          <h3 className="text-base font-semibold text-slate-900">{member.name}</h3>
-          <p className="truncate text-xs text-slate-500">
-            {member.location ?? "Location hidden"}
-            {member.country ? ` · ${member.country}` : ""}
-          </p>
-        </div>
-      </div>
+      </Link>
       <div className="border-t border-slate-100 px-4 py-3 text-sm text-slate-700">
         <p className="line-clamp-2">
           <span className="font-semibold text-slate-900">Goal: </span>

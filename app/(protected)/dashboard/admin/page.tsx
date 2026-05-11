@@ -37,6 +37,7 @@ export default async function AdminDashboardPage({
     phoneNumber: u.phoneNumber,
     role: u.role,
     onboardingStatus: u.onboardingStatus,
+    profileApprovalStatus: u.profileApprovalStatus,
     primaryGoal: u.primaryGoal,
     joinAim: u.joinAim,
     country: u.country,
@@ -113,13 +114,14 @@ export default async function AdminDashboardPage({
         </p>
 
         <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200">
-          <table className="min-w-[720px] w-full border-collapse text-left">
+          <table className="min-w-[800px] w-full border-collapse text-left">
             <thead className="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
               <tr>
                 <th className="px-3 py-3">User</th>
                 <th className="hidden px-3 py-3 md:table-cell">Profile hint</th>
                 <th className="px-3 py-3">Role</th>
                 <th className="px-3 py-3">Onboarding</th>
+                <th className="hidden px-3 py-3 sm:table-cell">Profile</th>
                 <th className="hidden px-3 py-3 lg:table-cell">Joined</th>
                 <th className="px-3 py-3">Note</th>
               </tr>
@@ -127,7 +129,7 @@ export default async function AdminDashboardPage({
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-3 py-8 text-center text-sm text-slate-500">
+                  <td colSpan={7} className="px-3 py-8 text-center text-sm text-slate-500">
                     No users match this search.
                   </td>
                 </tr>

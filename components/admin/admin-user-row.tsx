@@ -20,6 +20,7 @@ export type AdminUserRowModel = {
   phoneNumber: string | null;
   role: string;
   onboardingStatus: string;
+  profileApprovalStatus?: string;
   primaryGoal: string | null;
   joinAim: string | null;
   country: string | null;
@@ -33,6 +34,9 @@ export type AdminUserRowModel = {
   } | null;
   mentorProfile: { domainExpertise: string } | null;
   investorProfile: { firmName: string } | null;
+  profileApprovalNote?: string | null;
+  image?: string | null;
+  coverImageUrl?: string | null;
 };
 
 function profileHint(user: AdminUserRowModel): ProfileHint {
@@ -127,6 +131,11 @@ export function AdminUserRow({
             Save role
           </button>
         </form>
+      </td>
+      <td className="hidden px-3 py-3 sm:table-cell">
+        <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
+          {user.profileApprovalStatus ?? "—"}
+        </span>
       </td>
       <td className="px-3 py-3">
         <form action={onboardingAction} className="space-y-1">

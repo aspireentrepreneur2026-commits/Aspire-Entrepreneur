@@ -42,3 +42,4 @@ next-env.d.ts
 
 # Feed uploads (local dev); use Vercel Blob in production for persistence
 /public/uploads/feed/
+/public/uploads/profile/

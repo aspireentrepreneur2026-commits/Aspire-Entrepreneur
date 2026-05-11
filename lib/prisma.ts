@@ -10,7 +10,25 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is required to initialize Prisma.");
 }
 
-const adapter = new PrismaPg({ connectionString });
+/**
+ * `pg` warns when `sslmode` is require/prefer/verify-ca (today they behave like verify-full).
+ * Setting verify-full explicitly keeps that behavior and avoids the console warning before pg v9.
+ */
+function databaseUrlForPgAdapter(urlString: string): string {
+  try {
+    const url = new URL(urlString);
+    const mode = url.searchParams.get("sslmode");
+    if (mode === "require" || mode === "prefer" || mode === "verify-ca") {
+      url.searchParams.set("sslmode", "verify-full");
+      return url.href;
+    }
+  } catch {
+    // Non-URL strings (e.g. some proxies) — use as-is
+  }
+  return urlString;
+}
+
+const adapter = new PrismaPg({ connectionString: databaseUrlForPgAdapter(connectionString) });
 
 export const prisma =
   globalForPrisma.prisma ??
