@@ -7,8 +7,61 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { auth, signIn, signOut } from "@/auth";
 import { getPostAuthRedirectPath } from "@/lib/auth-redirect";
+import {
+  ENTREPRENEUR_TRACK_FIELDS,
+  FOUNDER_TRACK_FIELDS,
+  type EntrepreneurTrack,
+  type FounderTrack,
+} from "@/lib/registration-config";
 
-type AppRole = "FOUNDER" | "MENTOR" | "INVESTOR" | "ADMIN";
+function readDynamicTrackFields(
+  formData: FormData,
+  defs: { name: string; label: string; required: boolean }[],
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const f of defs) {
+    const raw = formData.get(f.name);
+    const s = raw == null ? "" : String(raw).trim();
+    if (f.required && s.length < 1) {
+      throw new Error(`${f.label} is required.`);
+    }
+    if (s.length) out[f.name] = s;
+  }
+  return out;
+}
+
+function buildFounderTractionMeta(parts: {
+  registrationPath?: string;
+  entrepreneurTrack?: EntrepreneurTrack;
+  entrepreneurFields?: Record<string, string>;
+  founderTrack?: FounderTrack;
+  founderFields?: Record<string, string>;
+}): string {
+  try {
+    return JSON.stringify({ v: 1, ...parts });
+  } catch {
+    return "registration-meta";
+  }
+}
+
+const newBusinessRegisterSchema = z.object({
+  businessName: z.string().min(2, "Business name is required."),
+  businessModel: z.string().min(2, "Business model is required."),
+  targetMarket: z.string().min(2, "Target market is required."),
+  launchTimeline: z.string().min(2, "Launch timeline is required."),
+  teamBackground: z.string().optional(),
+  initialBudget: z.string().optional(),
+});
+
+const registrationPathSchema = z.enum([
+  "MENTOR",
+  "INVESTOR",
+  "ENTREPRENEUR",
+  "FOUNDER",
+  "NEW_BUSINESS",
+  "STARTUP",
+  "NEW_IDEA",
+]);
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name should be at least 2 characters."),
@@ -17,7 +70,7 @@ const registerSchema = z.object({
   country: z.string().min(2, "Country is required."),
   location: z.string().min(2, "Location is required."),
   zipCode: z.string().min(2, "Zip code is required."),
-  userType: z.enum(["ENTREPRENEUR", "NEW_BUSINESS"]),
+  registrationPath: registrationPathSchema,
   joinAim: z.string().min(10, "Please share your main aim to join this portal."),
   aboutYourself: z.string().min(20, "Tell us more about yourself (minimum 20 characters)."),
   experienceLevel: z.string().min(2, "Experience level is required."),
@@ -30,24 +83,26 @@ const registerSchema = z.object({
     .regex(/[0-9]/, "Password must contain at least one number."),
 });
 
-const entrepreneurSchema = z.object({
-  entrepreneurCategory: z.string().min(2, "Please select your entrepreneur type."),
-  startupName: z.string().min(2, "Startup name is required."),
-  stage: z.string().min(2, "Startup stage is required."),
+const founderBaseSchema = z.object({
+  ventureName: z.string().min(2, "Venture or project name is required."),
   industry: z.string().min(2, "Industry is required."),
-  teamSize: z.string().optional(),
-  fundingNeeded: z.string().optional(),
-  traction: z.string().optional(),
+  stage: z.string().min(2, "Stage is required."),
 });
 
-const newBusinessSchema = z.object({
-  newBusinessCategory: z.string().min(2, "Please select your new business/startup type."),
-  businessName: z.string().min(2, "Business name is required."),
-  businessModel: z.string().min(2, "Business model is required."),
-  targetMarket: z.string().min(2, "Target market is required."),
-  launchTimeline: z.string().min(2, "Launch timeline is required."),
-  teamBackground: z.string().optional(),
-  initialBudget: z.string().optional(),
+const mentorRegisterSchema = z.object({
+  yearsExperience: z.coerce.number().int().min(1, "Years of experience is required."),
+  domainExpertise: z.string().min(2, "Domain expertise is required."),
+  pastCompanies: z.string().optional(),
+  mentoringStyle: z.string().optional(),
+  availability: z.string().optional(),
+});
+
+const investorRegisterSchema = z.object({
+  firmName: z.string().min(2, "Firm or fund name is required."),
+  checkSizeRange: z.string().min(2, "Check size range is required."),
+  investmentStage: z.string().min(2, "Investment stage is required."),
+  sectorsOfInterest: z.string().min(2, "Sectors of interest are required."),
+  preferredGeography: z.string().optional(),
 });
 
 const loginSchema = z.object({
@@ -71,7 +126,7 @@ export async function registerAction(
     country: formData.get("country"),
     location: formData.get("location"),
     zipCode: formData.get("zipCode"),
-    userType: formData.get("userType"),
+    registrationPath: formData.get("registrationPath"),
     joinAim: formData.get("joinAim"),
     aboutYourself: formData.get("aboutYourself"),
     experienceLevel: formData.get("experienceLevel"),
@@ -91,7 +146,7 @@ export async function registerAction(
     country,
     location,
     zipCode,
-    userType,
+    registrationPath,
     joinAim,
     aboutYourself,
     experienceLevel,
@@ -110,103 +165,289 @@ export async function registerAction(
   }
 
   const now = new Date();
-
   const passwordHash = await bcrypt.hash(password, 10);
+  const locationLine = `${location} (ZIP: ${zipCode})`;
 
-  const role: AppRole = "FOUNDER";
-  if (userType === "ENTREPRENEUR") {
-    const entrepreneurParsed = entrepreneurSchema.safeParse({
-      entrepreneurCategory: formData.get("entrepreneurCategory"),
-      startupName: formData.get("startupName"),
-      stage: formData.get("stage"),
-      industry: formData.get("industry"),
-      teamSize: formData.get("teamSize"),
-      fundingNeeded: formData.get("fundingNeeded"),
-      traction: formData.get("traction"),
-    });
-    if (!entrepreneurParsed.success) {
-      return { error: entrepreneurParsed.error.issues[0]?.message ?? "Entrepreneur profile data is invalid." };
-    }
-
-    await prisma.user.create({
-      data: {
-        name,
-        email,
-        phoneNumber,
-        country,
-        location: `${location} (ZIP: ${zipCode})`,
-        joinAim,
-        aboutYourself,
-        experienceLevel,
-        primaryGoal,
-        linkedinUrl,
-        role,
-        onboardingStatus: "ROLE_PROFILE",
-        emailVerified: now,
-        phoneVerifiedAt: now,
-        passwordHash,
-        founderProfile: {
-          create: {
-            startupName: entrepreneurParsed.data.startupName,
-            stage: entrepreneurParsed.data.stage,
-            industry: entrepreneurParsed.data.industry,
-            teamSize: entrepreneurParsed.data.teamSize,
-            fundingNeeded: entrepreneurParsed.data.fundingNeeded,
-            traction: entrepreneurParsed.data.traction
-              ? `${entrepreneurParsed.data.traction} | Type: ${entrepreneurParsed.data.entrepreneurCategory}`
-              : `Type: ${entrepreneurParsed.data.entrepreneurCategory}`,
-          },
-        },
-      },
-    });
-  } else {
-    const newBusinessParsed = newBusinessSchema.safeParse({
-      newBusinessCategory: formData.get("newBusinessCategory"),
-      businessName: formData.get("businessName"),
-      businessModel: formData.get("businessModel"),
-      targetMarket: formData.get("targetMarket"),
-      launchTimeline: formData.get("launchTimeline"),
-      teamBackground: formData.get("teamBackground"),
-      initialBudget: formData.get("initialBudget"),
-    });
-    if (!newBusinessParsed.success) {
-      return { error: newBusinessParsed.error.issues[0]?.message ?? "New business profile data is invalid." };
-    }
-
-    await prisma.user.create({
-      data: {
-        name,
-        email,
-        phoneNumber,
-        country,
-        location: `${location} (ZIP: ${zipCode})`,
-        joinAim,
-        aboutYourself,
-        experienceLevel,
-        primaryGoal,
-        linkedinUrl,
-        role,
-        onboardingStatus: "ROLE_PROFILE",
-        emailVerified: now,
-        phoneVerifiedAt: now,
-        passwordHash,
-        founderProfile: {
-          create: {
-            startupName: newBusinessParsed.data.businessName,
-            stage: newBusinessParsed.data.launchTimeline,
-            industry: newBusinessParsed.data.targetMarket,
-            teamSize: newBusinessParsed.data.teamBackground,
-            fundingNeeded: newBusinessParsed.data.initialBudget,
-            traction: `${newBusinessParsed.data.businessModel} | Type: ${newBusinessParsed.data.newBusinessCategory}`,
-          },
-        },
-      },
-    });
-  }
-
-  return {
-    success: "Account created successfully.",
+  const baseUser = {
+    name,
+    email,
+    phoneNumber,
+    country,
+    location: locationLine,
+    joinAim,
+    aboutYourself,
+    experienceLevel,
+    primaryGoal,
+    linkedinUrl,
+    passwordHash,
+    emailVerified: now,
+    phoneVerifiedAt: now,
   };
+
+  try {
+    if (registrationPath === "MENTOR") {
+      const m = mentorRegisterSchema.safeParse({
+        yearsExperience: formData.get("yearsExperience"),
+        domainExpertise: formData.get("domainExpertise"),
+        pastCompanies: formData.get("pastCompanies"),
+        mentoringStyle: formData.get("mentoringStyle"),
+        availability: formData.get("availability"),
+      });
+      if (!m.success) {
+        return { error: m.error.issues[0]?.message ?? "Invalid mentor details." };
+      }
+      await prisma.user.create({
+        data: {
+          ...baseUser,
+          role: "MENTOR",
+          onboardingStatus: "COMPLETED",
+          profileApprovalStatus: "PENDING",
+          mentorProfile: {
+            create: m.data,
+          },
+        },
+      });
+      return { success: "Account created successfully." };
+    }
+
+    if (registrationPath === "INVESTOR") {
+      const inv = investorRegisterSchema.safeParse({
+        firmName: formData.get("firmName"),
+        checkSizeRange: formData.get("checkSizeRange"),
+        investmentStage: formData.get("investmentStage"),
+        sectorsOfInterest: formData.get("sectorsOfInterest"),
+        preferredGeography: formData.get("preferredGeography"),
+      });
+      if (!inv.success) {
+        return { error: inv.error.issues[0]?.message ?? "Invalid investor details." };
+      }
+      await prisma.user.create({
+        data: {
+          ...baseUser,
+          role: "INVESTOR",
+          onboardingStatus: "COMPLETED",
+          profileApprovalStatus: "PENDING",
+          investorProfile: {
+            create: inv.data,
+          },
+        },
+      });
+      return { success: "Account created successfully." };
+    }
+
+    if (registrationPath === "ENTREPRENEUR") {
+      const fb = founderBaseSchema.safeParse({
+        ventureName: formData.get("ventureName"),
+        industry: formData.get("industry"),
+        stage: formData.get("stage"),
+      });
+      if (!fb.success) {
+        return { error: fb.error.issues[0]?.message ?? "Venture details are invalid." };
+      }
+      const t = String(formData.get("entrepreneurTrack") ?? "").trim() as EntrepreneurTrack;
+      const defs = ENTREPRENEUR_TRACK_FIELDS[t];
+      if (!defs) {
+        return { error: "Select your entrepreneur track (e.g. new beginner, new startup)." };
+      }
+      const entrepreneurFields = readDynamicTrackFields(formData, defs);
+      const tractionMeta = buildFounderTractionMeta({
+        registrationPath,
+        entrepreneurTrack: t,
+        entrepreneurFields,
+      });
+      await prisma.user.create({
+        data: {
+          ...baseUser,
+          role: "FOUNDER",
+          onboardingStatus: "ROLE_PROFILE",
+          profileApprovalStatus: "PENDING",
+          founderProfile: {
+            create: {
+              startupName: fb.data.ventureName,
+              stage: fb.data.stage,
+              industry: fb.data.industry,
+              teamSize: `Entrepreneur: ${t}`,
+              fundingNeeded: formData.get("fundingNeeded")?.toString().trim() || null,
+              traction: tractionMeta,
+            },
+          },
+        },
+      });
+      return { success: "Account created successfully." };
+    }
+
+    if (registrationPath === "FOUNDER") {
+      const fb = founderBaseSchema.safeParse({
+        ventureName: formData.get("ventureName"),
+        industry: formData.get("industry"),
+        stage: formData.get("stage"),
+      });
+      if (!fb.success) {
+        return { error: fb.error.issues[0]?.message ?? "Venture details are invalid." };
+      }
+      const t = String(formData.get("founderTrack") ?? "").trim() as FounderTrack;
+      const defs = FOUNDER_TRACK_FIELDS[t];
+      if (!defs) {
+        return { error: "Select your founder track (e.g. early-stage startup, growth company)." };
+      }
+      const founderFields = readDynamicTrackFields(formData, defs);
+      const tractionMeta = buildFounderTractionMeta({
+        registrationPath,
+        founderTrack: t,
+        founderFields,
+      });
+      await prisma.user.create({
+        data: {
+          ...baseUser,
+          role: "FOUNDER",
+          onboardingStatus: "ROLE_PROFILE",
+          profileApprovalStatus: "PENDING",
+          founderProfile: {
+            create: {
+              startupName: fb.data.ventureName,
+              stage: fb.data.stage,
+              industry: fb.data.industry,
+              teamSize: `Founder: ${t}`,
+              fundingNeeded: formData.get("fundingNeeded")?.toString().trim() || null,
+              traction: tractionMeta,
+            },
+          },
+        },
+      });
+      return { success: "Account created successfully." };
+    }
+
+    if (registrationPath === "NEW_IDEA") {
+      const fb = founderBaseSchema.safeParse({
+        ventureName: formData.get("ventureName"),
+        industry: formData.get("industry"),
+        stage: formData.get("stage"),
+      });
+      if (!fb.success) {
+        return { error: fb.error.issues[0]?.message ?? "Venture details are invalid." };
+      }
+      const ideaTrack: FounderTrack = "IDEA_STAGE";
+      const ideaDefs = FOUNDER_TRACK_FIELDS[ideaTrack];
+      const founderFields = readDynamicTrackFields(formData, ideaDefs);
+      const tractionMeta = buildFounderTractionMeta({
+        registrationPath,
+        founderTrack: ideaTrack,
+        founderFields,
+      });
+      await prisma.user.create({
+        data: {
+          ...baseUser,
+          role: "FOUNDER",
+          onboardingStatus: "ROLE_PROFILE",
+          profileApprovalStatus: "PENDING",
+          founderProfile: {
+            create: {
+              startupName: fb.data.ventureName,
+              stage: fb.data.stage,
+              industry: fb.data.industry,
+              teamSize: "Venture: new idea · IDEA_STAGE",
+              fundingNeeded: formData.get("fundingNeeded")?.toString().trim() || null,
+              traction: tractionMeta,
+            },
+          },
+        },
+      });
+      return { success: "Account created successfully." };
+    }
+
+    if (registrationPath === "NEW_BUSINESS") {
+      const fb = founderBaseSchema.safeParse({
+        ventureName: formData.get("ventureName"),
+        industry: formData.get("industry"),
+        stage: formData.get("stage"),
+      });
+      if (!fb.success) {
+        return { error: fb.error.issues[0]?.message ?? "Venture details are invalid." };
+      }
+      const nb = newBusinessRegisterSchema.safeParse({
+        businessName: formData.get("businessName"),
+        businessModel: formData.get("businessModel"),
+        targetMarket: formData.get("targetMarket"),
+        launchTimeline: formData.get("launchTimeline"),
+        teamBackground: formData.get("teamBackground"),
+        initialBudget: formData.get("initialBudget"),
+      });
+      if (!nb.success) {
+        return { error: nb.error.issues[0]?.message ?? "New business details are invalid." };
+      }
+      const tractionMeta = buildFounderTractionMeta({
+        registrationPath,
+        founderFields: {
+          businessModel: nb.data.businessModel,
+          targetMarket: nb.data.targetMarket,
+          teamBackground: nb.data.teamBackground ?? "",
+          initialBudget: nb.data.initialBudget ?? "",
+        },
+      });
+      await prisma.user.create({
+        data: {
+          ...baseUser,
+          role: "FOUNDER",
+          onboardingStatus: "ROLE_PROFILE",
+          profileApprovalStatus: "PENDING",
+          founderProfile: {
+            create: {
+              startupName: nb.data.businessName,
+              stage: nb.data.launchTimeline,
+              industry: fb.data.industry,
+              teamSize: fb.data.ventureName,
+              fundingNeeded: nb.data.initialBudget ?? null,
+              traction: tractionMeta,
+            },
+          },
+        },
+      });
+      return { success: "Account created successfully." };
+    }
+
+    if (registrationPath === "STARTUP") {
+      const fb = founderBaseSchema.safeParse({
+        ventureName: formData.get("ventureName"),
+        industry: formData.get("industry"),
+        stage: formData.get("stage"),
+      });
+      if (!fb.success) {
+        return { error: fb.error.issues[0]?.message ?? "Venture details are invalid." };
+      }
+      const startupTrack: FounderTrack = "EARLY_STARTUP";
+      const startupDefs = FOUNDER_TRACK_FIELDS[startupTrack];
+      const founderFields = readDynamicTrackFields(formData, startupDefs);
+      const tractionMeta = buildFounderTractionMeta({
+        registrationPath,
+        founderTrack: startupTrack,
+        founderFields,
+      });
+      await prisma.user.create({
+        data: {
+          ...baseUser,
+          role: "FOUNDER",
+          onboardingStatus: "ROLE_PROFILE",
+          profileApprovalStatus: "PENDING",
+          founderProfile: {
+            create: {
+              startupName: fb.data.ventureName,
+              stage: fb.data.stage,
+              industry: fb.data.industry,
+              teamSize: "Venture: startup · EARLY_STARTUP",
+              fundingNeeded: formData.get("fundingNeeded")?.toString().trim() || null,
+              traction: tractionMeta,
+            },
+          },
+        },
+      });
+      return { success: "Account created successfully." };
+    }
+
+    throw new Error("Invalid registration path.");
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Registration failed.";
+    return { error: msg };
+  }
 }
 
 export async function loginAction(
