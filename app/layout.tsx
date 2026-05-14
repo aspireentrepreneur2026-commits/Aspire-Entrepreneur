@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Entrepreneurship Support Portal",
+  title: "ASPIRE ENTREPRENEUR",
   description: "FYP platform for founders, mentors, investors, and admins.",
+  icons: {
+    icon: [{ url: "/aspire/favicon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({

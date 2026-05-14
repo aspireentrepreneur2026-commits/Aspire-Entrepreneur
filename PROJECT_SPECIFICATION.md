@@ -1,182 +1,149 @@
-# Entrepreneurship Support Portal
+# Aspire Entrepreneur — Project specification
 
-A web platform for **founders**, **mentors**, **investors**, and **admins** to discover startups, manage profiles, run mentorship and interest workflows, and keep the marketplace trustworthy through verification and moderation.
+A web platform (**Aspire**) for **founders**, **mentors**, **investors**, and **admins** to complete profiles, discover members, share updates on a feed, follow others, and keep quality through profile approval and admin tools.
 
-This repository is prepared as the home for the final-year project implementation. Application source code will be added here as development progresses.
-
-## Planned technology stack
-
-| Layer | Choice |
-|--------|--------|
-| Frontend & app server | Next.js (TypeScript, App Router) |
-| APIs | Next.js Route Handlers / server actions |
-| Runtime | Node.js (via Next.js) |
-| Database | PostgreSQL |
-| ORM | Prisma |
-| Authentication | Auth.js (NextAuth) |
-| Deployment | Vercel |
-| File storage | Cloud object storage (documents, media) |
-| Phase 2 (optional) | Redis (caching, rate limiting) |
-
-## Core product scope (high level)
-
-- **Authentication & roles:** sign-up, login, sessions, onboarding for Founder, Mentor, Investor, Admin.
-- **Startup listings:** create, edit, draft/publish, structured fields (industry, stage, model, geography, ask, etc.).
-- **Discovery:** search, filters, sort, bookmarks.
-- **Profiles:** mentor and investor profiles with expertise and preferences.
-- **Communication:** interest requests, message threads, request status (e.g. pending / accepted / closed).
-- **Trust:** document upload, admin review, verification badges, audit trail for sensitive actions.
-- **Admin:** moderation, flags, user/listing governance, basic platform metrics.
-- **Analytics:** founder dashboards (views, requests); admin summaries and simple exports.
+This document describes the **technology stack**, **what is implemented today**, and **what remains** relative to the original eight-module plan.
 
 ---
 
-## Modules overview
+## Technology stack (as implemented)
 
-The MVP is organized into **8 modules**. They build on each other: start with **Module 1**, then **2–4** (core data), then **5–6** (communication and trust), then **7–8** (operations and insight).
+| Layer | Technology | Notes |
+|--------|------------|--------|
+| **Frontend language** | **TypeScript** | All UI and shared app code. |
+| **Frontend framework** | **React 19** | UI components and client interactivity. |
+| **App framework** | **Next.js 16** (App Router) | File-based routes, layouts, Server Components, Route Handlers where used. |
+| **Styling** | **Tailwind CSS 4** | Utility-first UI (`@tailwindcss/postcss`). |
+| **Backend language** | **TypeScript** (same codebase) | No separate Java/Python service; server logic lives in Next.js. |
+| **Backend execution** | **Node.js** | Via Next.js server runtime. |
+| **Data access** | **Prisma ORM 7** + **`@prisma/adapter-pg`** | Type-safe queries; PostgreSQL driver. |
+| **Database** | **PostgreSQL** | Primary datastore (`DATABASE_URL`). |
+| **Authentication** | **Auth.js (NextAuth v5 beta)** | JWT strategy, credentials + flows in `auth.ts` / `auth.config.ts`. |
+| **Password hashing** | **bcryptjs** | Stored as `passwordHash` on `User`. |
+| **Validation** | **Zod 4** | Forms and server actions. |
+| **Email (optional)** | **Resend** | Available for transactional email when configured. |
+| **File storage (profiles / uploads)** | **Vercel Blob** (`@vercel/blob`) | Profile and media uploads when Blob env is set; local/API fallbacks in code paths as applicable. |
+| **Other libraries** | **Effect**, **Firebase / Firebase Admin** | Present in dependencies for integrations or future use; core flows are Prisma + Next.js. |
+| **Tooling** | **ESLint** (Next config), **tsx** | Linting; Prisma seed runner. |
+| **Deployment** | **Vercel** (typical) | `npm run build` = `prisma generate && next build`. |
 
-| # | Module | One-line purpose |
-|---|--------|------------------|
-| 1 | Authentication & user management | Who can sign in, which role they have, and safe sessions. |
-| 2 | Founder & startup listings | Structured startup pages and publish lifecycle. |
-| 3 | Discovery & search | Find and sort listings; save favourites. |
-| 4 | Mentor & investor profiles | Rich profiles for mentors and investors. |
-| 5 | Communication & requests | Interest flow + messaging tied to requests. |
-| 6 | Verification & trust | Documents, admin decisions, badges, audit trail. |
-| 7 | Admin control panel | Moderation, flags, users/listings governance. |
-| 8 | Analytics & reporting | Dashboards and simple exports for founders and admins. |
-
-### Module 1 — Authentication & user management
-
-**Goal:** Secure access and clear roles for Founder, Mentor, Investor, Admin.
-
-**Work to deliver:**
-
-- Sign up, login, logout; password reset and email flows (as required by Auth.js).
-- Role assignment at onboarding (or admin-assigned role if your policy requires it).
-- Session handling (secure cookies, protected routes).
-- Profile shell: display name, avatar, basic settings per role.
-- Middleware / server checks so APIs and pages enforce **role-based access** consistently.
+**Summary:** Single **TypeScript** monolith: **React + Next.js** on the client and server, **PostgreSQL + Prisma** for data, **NextAuth** for sessions, **Tailwind** for design.
 
 ---
-
-### Module 2 — Founder & startup listings
-
-**Goal:** Founders can create and maintain startup listings with structured business data.
-
-**Work to deliver:**
-
-- CRUD for listings: title, summary, industry, stage, business model, geography, revenue band, funding ask, links, tags.
-- **Draft / published** states; only published listings appear in public discovery (unless you add "preview" for admins).
-- Listing ownership (founder-only edit); optional soft-delete or archive.
-- Upload or link to pitch deck / logo via **cloud storage** (integrate with Module 6 for sensitive docs if needed).
-
----
-
-### Module 3 — Discovery & search
-
-**Goal:** Users can find relevant startups quickly.
-
-**Work to deliver:**
-
-- Public listing index with **pagination**.
-- **Search** (keyword on title/summary/tags).
-- **Filters:** category/industry, stage, geography, rough budget/ask range (as you define in schema).
-- **Sort:** newest first, relevance (simple scoring optional for MVP).
-- **Saved listings** (bookmarks) for logged-in users.
-- Database **indexes** on fields you filter/sort often.
-
----
-
-### Module 4 — Mentor & investor profiles
-
-**Goal:** Mentors and investors present expertise and preferences so discovery is meaningful.
-
-**Work to deliver:**
-
-- Extended profile models: bio, focus areas, years of experience, availability notes, preferred stages, sectors.
-- Investor-specific: cheque size band, geography, stage preferences.
-- Profile visibility rules (public vs logged-in only, if required).
-- List/detail pages for mentors and investors; optional link from listings to "interested mentors/investors" later via Module 5.
-
----
-
-### Module 5 — Communication & requests
-
-**Goal:** Controlled introductions and conversations between roles.
-
-**Work to deliver:**
-
-- **Interest request** entity: who requests, which listing (or profile), message, status **pending → accepted / declined → closed**.
-- **Message threads** tied to a request (or listing) so chat stays in context.
-- Notifications (in-app first; email optional) when a request or message arrives.
-- Rate limiting / abuse basics on messaging endpoints (Redis in phase 2 is fine for throttling).
-
----
-
-### Module 6 — Verification & trust
-
-**Goal:** Increase trust via documents and admin-reviewed decisions.
-
-**Work to deliver:**
-
-- Upload verification documents to object storage; metadata in DB.
-- Admin queue: approve / reject with reason.
-- **Verification badge** on user or listing when approved.
-- **Audit log** rows for verification and other sensitive actions (who, what, when).
-
----
-
-### Module 7 — Admin control panel
-
-**Goal:** Operators can keep the platform safe and consistent.
-
-**Work to deliver:**
-
-- User management: view users, suspend or role-change (within your policy).
-- Listing moderation: unpublish, flag, or remove content.
-- Report/flag queue from users (if you add user-submitted reports in MVP).
-- Platform health **snapshot**: counts of users, listings, pending verifications (deeper metrics in Module 8).
-
----
-
-### Module 8 — Analytics & reporting
-
-**Goal:** Founders and admins see impact and health without building a full BI product.
-
-**Work to deliver:**
-
-- **Founder dashboard:** listing views (if you track views), incoming requests, response rates.
-- **Admin dashboard:** active users, new listings, verification funnel, basic charts or tables.
-- **Export:** CSV (or similar) for a subset of admin reports for the FYP demo.
-
----
-
-### Suggested build order (for scheduling)
-
-1. **Module 1** → foundation for everything.  
-2. **Module 2** + **Module 4** (parallel possible after schemas exist) → real content in the system.  
-3. **Module 3** → makes the product demoable.  
-4. **Module 5** → completes the "connect" story.  
-5. **Module 6** + **Module 7** → trust and governance.  
-6. **Module 8** → polish for evaluation and stakeholder demos.
 
 ## Repository status
 
-- Previous placeholder documentation files were removed to start clean.
-- **Next step:** initialize the Next.js app, Prisma schema, and environment configuration when you begin implementation.
+- **Application code is present and runnable** (not a placeholder repo).
+- **Database schema** is defined in `prisma/schema.prisma` with migrations under `prisma/migrations`.
+- **Seed script** (`npm run db:seed`): admin user + **50 demo personas** (founders / mentors / investors) with filled profiles, avatars, and cover image URLs for local/demo use.
 
-## Getting started (after the app is scaffolded)
+---
 
-Typical steps once the codebase exists:
+## Major features implemented
 
-1. Install dependencies: `npm install`
-2. Copy `.env.example` to `.env` and set database URL, Auth.js secrets, and storage keys.
-3. Run migrations: `npx prisma migrate dev`
-4. Start development: `npm run dev`
+### Authentication & access
 
-Exact commands may vary slightly depending on the package manager and folder layout you choose.
+- Register, login, logout; protected routes via middleware (`auth.config.ts`).
+- Role-based experience: **FOUNDER**, **MENTOR**, **INVESTOR**, **ADMIN**.
+- Onboarding wizard (`/onboarding`) driven by server actions and Prisma.
+- Email / phone verification flows (verification codes model + actions) as implemented in codebase.
+
+### User profiles & onboarding data
+
+- **User** fields: name, email, phone, location, country, goals, bio, experience, LinkedIn, avatar (`image`), cover (`coverImageUrl`), onboarding status, profile approval status.
+- **FounderProfile**, **MentorProfile**, **InvestorProfile** with structured fields (startup/firm, stage, industry, funding text, team size, mentor years/domain, investor cheque range / sectors, etc.).
+- **Extended profile** page and actions for post-onboarding sections.
+- **Public member profile** (`/members/[id]`) and **own profile** (`/members/me`).
+- **Settings** for account/profile updates.
+
+### Dashboard & navigation
+
+- **Home dashboard** (`/dashboard`): feed composer, post stream, role sidebar, right rail (prompts, trending links, suggested members + follow).
+- **Discover** (`/dashboard/discover`): signed-in member search with filters (contact/name-email-phone, company, location, investment range, team size, entity type chips).
+- **Member network** (`/dashboard/network`): grid of completed-onboarding members.
+- **Ideas workspace** (`/dashboard/ideas`): ideas/validation cards + **Founder & SME toolkit** cards (funding, mentorship, new business, business spotlight).
+- **Business workspace** (`/dashboard/business`): hub links; legacy `/dashboard/startups` redirects here.
+- **Role dashboards**: founder / mentor / investor summary pages under `/dashboard/...`.
+- **Admin**: user listing, per-user detail, profile approval (approve/reject with note), and related server actions.
+
+### Social feed (implemented scope)
+
+- **FeedPost** with body, timestamps; **FeedAttachment** (image / video / link); **FeedComment**.
+- Composer and post cards; admin-aware display where wired.
+- **UserFollow** follow/unfollow from UI where implemented (e.g. rail / profile patterns in codebase).
+
+### Trust & moderation (partial)
+
+- **ProfileApprovalStatus** (`PENDING` / `APPROVED` / `REJECTED`) on users; admin workflow to approve or reject with notes.
+- Not a full separate “document verification queue + audit log” as in the original Module 6 spec (see gaps below).
+
+### Developer experience
+
+- TypeScript strictness; Prisma client generation on install/build.
+- `PROJECT_SPECIFICATION.md` (this file) maintained to reflect reality vs plan.
+
+---
+
+## Modules vs implementation (done / partial / not started)
+
+Original plan had **8 modules**. Mapped status:
+
+| # | Module | Status | What exists | Main gaps |
+|---|--------|--------|-------------|-----------|
+| **1** | Authentication & user management | **Largely done** | Auth.js, sessions, register/login, roles, onboarding, settings, protected layouts | Password reset UX polish; any institution-specific SSO |
+| **2** | Founder & startup listings | **Partial / model differs** | Founder data lives on **User + FounderProfile**, not a separate “listing” table with draft/publish | Standalone listing CRUD, draft vs published listings, public index separate from members |
+| **3** | Discovery & search | **Partial** | **Discover members** (filters, types, ~48 results), network page | Saved searches, email alerts, dedicated **startup listing** discovery with pagination as originally spec’d |
+| **4** | Mentor & investor profiles | **Largely done** | Schema + onboarding + extended profile + member pages | “Directory” marketing pages if required beyond in-app discover |
+| **5** | Communication & requests | **Not implemented** | — | Interest requests, message threads, in-app notifications, rate limiting |
+| **6** | Verification & trust | **Partial** | Profile approval; optional uploads via Blob paths | Document queue, verification badges from docs, full audit log |
+| **7** | Admin control panel | **Partial** | Users list, user detail, approval actions | Flags/reports queue, suspend user, bulk ops, platform-wide metrics dashboard |
+| **8** | Analytics & reporting | **Minimal** | Per-role dashboard stubs / copy | Tracked listing views, CSV exports, charts, funnel metrics |
+
+---
+
+## UI / product decisions (recent)
+
+- **Terminology:** “Business” used in navigation and several labels where “Startups” appeared before; discover chip “Business & companies” (URL param may still use internal `startups` type where applicable).
+- **Hub layout:** Founder & SME toolkit consolidated on **Ideas** page; member grid on **Network** page; home feed simplified (no duplicate toolkit block).
+- **Header / sidebar:** Removed non-functional “coming soon” social shortcuts and disabled header icon buttons for a cleaner production feel.
+- **Stories strip:** Compact shortcuts only for working routes; TypeScript-safe `StoryShortcut` type for optional hash links.
+
+---
+
+## What remains (recommended priorities)
+
+1. **Module 5 — Messaging / requests:** interest entity, threads, basic notifications (even email-digest optional).
+2. **Module 6 — Trust:** optional document upload + admin queue; audit table for sensitive actions.
+3. **Module 3 — Discovery polish:** saved filters/bookmarks; align copy with whether you keep “members only” vs future public listings.
+4. **Module 7 — Admin:** flags, suspend, metrics snapshot.
+5. **Module 8 — Analytics:** lightweight counters + CSV export for FYP demo.
+6. **Module 2 (if required):** separate published “listing” entity only if the FYP requires it distinct from profiles.
+
+---
+
+## Getting started (developers)
+
+1. **Install:** `npm install`
+2. **Environment:** copy `.env.example` to `.env` / `.env.local` and set at least `DATABASE_URL`, Auth secrets (`AUTH_SECRET`, etc.), and optional `DATABASE_URL` for Prisma, Blob, Resend as needed.
+3. **Database:** `npx prisma migrate dev` (or deploy migrations in CI/production).
+4. **Seed (optional):** `npm run db:seed` — creates admin + demo personas (see console for emails; demo password documented in seed output).
+5. **Dev server:** `npm run dev`
+6. **Production build:** `npm run build` then `npm run start`
+
+---
+
+## Suggested build order (original — adjusted)
+
+Original order still makes sense for **remaining** work:
+
+1. Keep **Module 1** stable while adding features.  
+2. **Module 5** next if the story is “connect people.”  
+3. **Modules 6–7** for trust and operations.  
+4. **Module 8** last for demo polish.  
+5. Revisit **Module 2** only if listings must be a separate product surface from profiles.
+
+---
 
 ## License
 
-Specify your institution's or your own license when you publish the project.
+Specify your institution’s or your own license when you publish the project.

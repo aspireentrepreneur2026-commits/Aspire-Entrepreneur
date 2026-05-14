@@ -1,0 +1,154 @@
+/**
+ * Aspire landing header — readable wordmark on dark hero + fixed light bar,
+ * cyan accents aligned with /login and /register.
+ * Load after style.css / responsive.css.
+ */
+
+.navbar.aspire-landing-header {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+}
+
+.navbar.aspire-landing-header > .container {
+  max-width: 1200px;
+  padding-left: clamp(1rem, 4vw, 2rem);
+  padding-right: clamp(1rem, 4vw, 2rem);
+}
+
+/* Wordmark: not inside .menu, so menu_white never applied — force contrast */
+.navbar.aspire-landing-header .aspire-brand {
+  display: inline-block;
+  font-family: var(--saas-Inter, system-ui, sans-serif);
+  font-weight: 700;
+  font-size: clamp(0.8125rem, 1.35vw, 0.9375rem);
+  letter-spacing: 0.1em;
+  line-height: 1.25;
+  color: #f8fafc !important;
+  text-decoration: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  margin-right: 0.75rem !important;
+}
+
+.navbar.aspire-landing-header .aspire-brand:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 4px;
+}
+
+.navbar.aspire-landing-header .aspire-brand-muted {
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.navbar.aspire-landing-header .aspire-brand-accent {
+  font-weight: 800;
+  color: #22d3ee !important;
+}
+
+/* Scrolled / fixed white bar */
+.navbar.navbar_fixed.aspire-landing-header .aspire-brand {
+  color: #0f172a !important;
+}
+
+.navbar.navbar_fixed.aspire-landing-header .aspire-brand-muted {
+  color: #475569 !important;
+}
+
+.navbar.navbar_fixed.aspire-landing-header .aspire-brand-accent {
+  color: #0891b2 !important;
+}
+
+/* Auth-aligned CTAs */
+.navbar.aspire-landing-header .nav_right {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+@media (min-width: 576px) {
+  .navbar.aspire-landing-header .nav_right {
+    gap: 0.85rem;
+  }
+}
+
+.navbar.aspire-landing-header .nav_right .login_btn,
+.navbar.aspire-landing-header .nav_right .signup_btn {
+  border-radius: 10px;
+  padding: 0.65rem 1.2rem !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+}
+
+.navbar.aspire-landing-header .nav_right .signup_btn {
+  margin-left: 0 !important;
+}
+
+.navbar.aspire-landing-header .nav_right .login_btn {
+  color: #0f172a !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid rgba(148, 163, 184, 0.55) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.navbar.aspire-landing-header .nav_right .login_btn:hover {
+  background: #fff !important;
+  border-color: #22d3ee !important;
+  color: #0e7490 !important;
+}
+
+.navbar.aspire-landing-header .nav_right .signup_btn {
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+  border: 1px solid rgba(6, 182, 212, 0.95) !important;
+  color: #fff !important;
+  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.32);
+}
+
+.navbar.aspire-landing-header .nav_right .signup_btn:hover {
+  background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%) !important;
+  border-color: #67e8f9 !important;
+  color: #0f172a !important;
+}
+
+.navbar.navbar_fixed.aspire-landing-header .nav_right .login_btn {
+  background: #fff !important;
+  border-color: #cbd5e1 !important;
+}
+
+.navbar.navbar_fixed.aspire-landing-header .nav_right .signup_btn:hover {
+  color: #fff !important;
+  border-color: #06b6d4 !important;
+  background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%) !important;
+  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.35);
+}
+
+/* In-page section links (same landing only; auth stays /login /register) */
+.navbar.aspire-landing-header .aspire-inline-nav {
+  font-family: var(--saas-Inter, system-ui, sans-serif);
+  font-size: 0.78rem;
+  font-weight: 600;
+  row-gap: 0.35rem;
+  column-gap: 0.65rem;
+}
+
+.navbar.aspire-landing-header .aspire-inline-nav a {
+  color: rgba(248, 250, 252, 0.9) !important;
+  text-decoration: none !important;
+  white-space: nowrap;
+  padding: 0.35rem 0.15rem;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.navbar.aspire-landing-header .aspire-inline-nav a:hover {
+  color: #22d3ee !important;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.navbar.navbar_fixed.aspire-landing-header .aspire-inline-nav a {
+  color: #475569 !important;
+}
+
+.navbar.navbar_fixed.aspire-landing-header .aspire-inline-nav a:hover {
+  color: #0891b2 !important;
+  background: rgba(6, 182, 212, 0.08);
+}
